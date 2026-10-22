@@ -40,16 +40,18 @@ def distinct_players():
     return out
 
 
-def _entries():
-    if not os.path.exists(PLAYERS_FILE):
+def _entries(path=None):
+    path = path or PLAYERS_FILE
+    if not path or not os.path.exists(path):
         return []
-    return (yaml.safe_load(open(PLAYERS_FILE, encoding="utf-8")) or {}).get("roster", [])
+    return (yaml.safe_load(open(path, encoding="utf-8")) or {}).get("roster") or []
 
 
-def load():
-    """Return {raw_or_aka: confirmed_name_or_None}."""
+def load(path=None):
+    """Return {raw_or_aka: confirmed_name_or_None} from a players.yaml
+    (default: the current team's)."""
     res = {}
-    for e in _entries():
+    for e in _entries(path):
         conf = (e.get("name") or "").strip() or None
         res[e["as"]] = conf
         for a in e.get("aka") or []:

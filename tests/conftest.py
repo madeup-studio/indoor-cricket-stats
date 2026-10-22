@@ -27,10 +27,48 @@ def run_script():
     return _run_script
 
 
+def _copy_example(tmp_path):
+    import shutil
+    teams = tmp_path / "Teams"
+    shutil.copytree(os.path.join(REPO, "Teams", "example-team"), teams / "example-team",
+                    ignore=shutil.ignore_patterns(".build", "*.pdf"))
+    return teams
+
+
 @pytest.fixture
 def tmp_team(tmp_path):
     """A copy of Teams/example-team under tmp_path/Teams; returns that Teams dir."""
-    import shutil
-    teams = tmp_path / "Teams"
-    shutil.copytree(os.path.join(REPO, "Teams", "example-team"), teams / "example-team")
-    return teams
+    return _copy_example(tmp_path)
+
+
+@pytest.fixture
+def tmp_team_two_games_same_day(tmp_path):
+    """Example team + a copy of its game on the same day vs "Other Side"; returns the team dir."""
+    import json
+    teams = _copy_example(tmp_path)
+    data = teams / "example-team" / "2026-09-01" / "data"
+    g = json.loads((data / "2026-10-07.json").read_text(encoding="utf-8"))
+    old, new = g["opponent"], "Other Side"
+    g["opponent"] = new
+    g["summaries"] = {(new if k == old else k): v for k, v in g["summaries"].items()}
+    for inn in g["innings"]:
+        if inn["batting_team"] == old:
+            inn["batting_team"] = new
+    if g["result"]["player_of_match_team"] == old:
+        g["result"]["player_of_match_team"] = new
+    (data / "2026-10-07-other-side.json").write_text(json.dumps(g, indent=1), encoding="utf-8")
+    r = _run_script("build_scorecards.py", env={"TEAMS_DIR": str(teams)})
+    assert r.returncode == 0, r.stderr
+    return str(teams / "example-team")
+
+
+@pytest.fixture
+def tmp_team_summaries_only(tmp_path):
+    """Example team whose only game has summaries but no verified ball-by-ball."""
+    teams = _copy_example(tmp_path)
+    cards = teams / "example-team" / "2026-09-01" / "scorecards"
+    for card in cards.glob("*.md"):
+        text = card.read_text(encoding="utf-8")
+        card.write_text(text.replace("  status: verified", "  status: summaries-only"),
+                        encoding="utf-8")
+    return str(teams / "example-team")
