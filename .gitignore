@@ -26,3 +26,7 @@ Teams/*
 # Generated reports (PDF stat cards and their HTML build)
 *.pdf
 Teams/*/.build/
+
+# Local tooling output
+.playwright-mcp/
+node_modules/

@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Viewer ES modules; lets node --test load them. Not copied into site/."
+}

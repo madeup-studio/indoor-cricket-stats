@@ -262,8 +262,8 @@ def _copy_viewer(out_dir, written):
     for dirpath, dirnames, filenames in os.walk(VIEWER_DIR):
         dirnames[:] = [d for d in dirnames if d != "tests" and d != "node_modules"]
         for f in filenames:
-            if f.endswith(".test.js"):
-                continue
+            if f.endswith(".test.js") or (f == "package.json" and dirpath == VIEWER_DIR):
+                continue                    # tests and the dev-only package.json stay out
             src = os.path.join(dirpath, f)
             dst = os.path.join(out_dir, os.path.relpath(src, VIEWER_DIR))
             os.makedirs(os.path.dirname(dst), exist_ok=True)

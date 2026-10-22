@@ -1,0 +1,212 @@
+/* Action Cricket viewer — phone-first. Colours, radii, shadows and spacing come from
+   tokens.css (the MaDe-uP Studios tokens). Deliberate deviation from the studio's
+   desktop scale: an 18px reading size and big numerals for the headline stats. */
+
+:root {
+  --ac-font-body: 18px;
+  --ac-font-big: 40px;
+  --ac-font-label: 12px;
+  --ac-gutter: 16px;
+  --ac-nav-h: 60px;
+  --ac-on-accent: #ffffff;                       /* text on the team colour */
+  --ac-gold: #f5b301;                            /* team's second colour (runtime) */
+  --ac-accent-ink: var(--madeup-color-accent);   /* accent used as text */
+  --ac-ease: cubic-bezier(.2, .7, .2, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ac-accent-ink: color-mix(in srgb, var(--madeup-color-accent) 55%, var(--madeup-color-ink));
+  }
+}
+[data-theme="dark"] {
+  --ac-accent-ink: color-mix(in srgb, var(--madeup-color-accent) 55%, var(--madeup-color-ink));
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--madeup-color-surface);
+  color: var(--madeup-color-ink);
+  font-family: var(--madeup-font-family-sans);
+  font-size: var(--ac-font-body);
+  line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+}
+a { color: var(--ac-accent-ink); }
+h1, h2, h3 { margin: 0; font-weight: 600; line-height: 1.2; }
+p { margin: 0 0 var(--madeup-space-3); }
+button, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--ac-accent-ink); outline-offset: 2px; border-radius: var(--madeup-radius-sm); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------------------- shell */
+.shell { min-height: 100dvh; display: flex; flex-direction: column; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: var(--madeup-space-2);
+  padding: calc(env(safe-area-inset-top) + 10px) var(--ac-gutter) 10px;
+  background: var(--madeup-color-surface);
+  border-bottom: 1px solid var(--madeup-color-border);
+}
+.badge {
+  flex: none; min-width: 40px; height: 40px; padding: 0 var(--madeup-space-2);
+  border: 0; border-radius: var(--madeup-radius-md);
+  background: var(--madeup-color-accent); color: var(--ac-on-accent);
+  font-size: 13px; font-weight: 600; letter-spacing: .04em;
+}
+.badge:not(:disabled) { cursor: pointer; }
+.team-name {
+  flex: 1; min-width: 0; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.icon-btn {
+  flex: none; width: 40px; height: 40px; display: grid; place-items: center;
+  border-radius: var(--madeup-radius-md); color: var(--madeup-color-ink-muted);
+}
+.icon-btn[aria-current="page"] { color: var(--ac-accent-ink); }
+.icon-btn svg, .nav svg {
+  fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.scope {
+  flex: none; max-width: 42vw; height: 40px; padding: 0 28px 0 10px;
+  font-size: 16px;                       /* 16px+ stops iOS zooming on focus */
+  border: 1px solid var(--madeup-color-border); border-radius: var(--madeup-radius-md);
+  background: var(--madeup-color-surface-elevated);
+  appearance: none; -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 15px) 17px, calc(100% - 10px) 17px;
+  background-size: 5px 5px; background-repeat: no-repeat;
+  text-overflow: ellipsis;
+}
+.scope[hidden] { display: none; }
+
+.view {
+  position: relative; flex: 1; width: 100%; max-width: 640px;
+  padding: var(--madeup-space-4) var(--ac-gutter)
+           calc(var(--ac-nav-h) + env(safe-area-inset-bottom) + var(--madeup-space-5));
+  overflow-x: hidden; outline: none;
+}
+.screen { animation: ac-enter 120ms var(--ac-ease) both; }
+.screen.leave {
+  position: absolute; left: var(--ac-gutter); right: var(--ac-gutter); top: var(--madeup-space-4);
+  animation: ac-leave 120ms ease-in both; pointer-events: none;
+}
+@keyframes ac-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes ac-leave { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .screen, .screen.leave { animation: none; }
+  .screen.leave { display: none; }
+}
+
+.nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: grid; grid-template-columns: repeat(var(--ac-nav-n, 6), 1fr);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--madeup-color-surface-elevated);
+  border-top: 1px solid var(--madeup-color-border);
+}
+.nav a {
+  min-height: var(--ac-nav-h); min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  color: var(--madeup-color-ink-muted); text-decoration: none;
+  font-size: var(--ac-font-label); line-height: 1.1;
+}
+.nav a svg { width: 22px; height: 22px; }
+.nav a span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav a[aria-current="page"] { color: var(--ac-accent-ink); font-weight: 600; }
+.nav a[hidden] { display: none; }
+
+/* ---------------------------------------------------------------- building blocks */
+.label {
+  display: block; margin: 0 0 var(--madeup-space-1);
+  font-size: 15px; font-variant-caps: all-small-caps; letter-spacing: .07em;
+  color: var(--madeup-color-ink-muted); font-weight: 600;
+}
+.big {
+  font-size: var(--ac-font-big); font-weight: 600; line-height: 1.05;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+}
+.muted { color: var(--madeup-color-ink-muted); }
+.small { font-size: 15px; }
+
+.card {
+  display: block; position: relative;
+  margin: 0 0 var(--madeup-space-3); padding: var(--madeup-space-4);
+  background: var(--madeup-color-surface-elevated); color: inherit; text-decoration: none;
+  border-radius: var(--madeup-radius-md); box-shadow: var(--madeup-shadow-card);
+  transition: transform 120ms var(--ac-ease), box-shadow 120ms var(--ac-ease);
+}
+a.card:active, button.card:active { transform: scale(.985); box-shadow: var(--madeup-shadow-card-hover); }
+@media (hover: hover) { a.card:hover { box-shadow: var(--madeup-shadow-card-hover); } }
+a.card::after {                         /* a quiet chevron: this card opens something */
+  content: ""; position: absolute; right: var(--madeup-space-4); top: 50%;
+  width: 8px; height: 8px; margin-top: -4px;
+  border-right: 2px solid var(--madeup-color-border); border-top: 2px solid var(--madeup-color-border);
+  transform: rotate(45deg);
+}
+.card h2 { font-size: 20px; margin-bottom: var(--madeup-space-1); }
+
+.list { list-style: none; margin: 0; padding: 0; }
+.row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--madeup-space-3);
+  padding: var(--madeup-space-3) 0; border-bottom: 1px solid var(--madeup-color-border);
+}
+.row:last-child { border-bottom: 0; }
+.row .val { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.empty {
+  margin: var(--madeup-space-4) 0; padding: var(--madeup-space-6) var(--madeup-space-4);
+  text-align: center; color: var(--madeup-color-ink-muted);
+  background: var(--madeup-color-surface-elevated);
+  border: 1px dashed var(--madeup-color-border); border-radius: var(--madeup-radius-md);
+}
+.empty h2 { color: var(--madeup-color-ink); font-size: 20px; margin-bottom: var(--madeup-space-2); }
+.empty button {
+  margin-top: var(--madeup-space-3); padding: 10px 18px; border: 0; border-radius: var(--madeup-radius-md);
+  background: var(--madeup-color-accent); color: var(--ac-on-accent); font-weight: 600;
+}
+.loading { color: var(--madeup-color-ink-muted); }
+
+.pill {
+  display: inline-block; min-width: 28px; padding: 1px 9px; border-radius: 999px;
+  font-size: 14px; font-weight: 600; text-align: center; line-height: 1.6;
+  color: var(--madeup-color-surface-elevated);   /* white in light, deep slate in dark */
+  background: var(--madeup-color-ink-muted);
+}
+.pill.win { background: var(--madeup-color-success); }
+.pill.loss { background: var(--madeup-color-danger); }
+
+/* ---------------------------------------------------------------- the skins strip
+   Four skins, ours over theirs; a won skin is filled with the team colour. */
+.skins { display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 4px; }
+.skin {
+  padding: 6px 2px; text-align: center; line-height: 1.15;
+  border: 1px solid var(--madeup-color-border); border-radius: var(--madeup-radius-sm);
+  font-variant-numeric: tabular-nums;
+}
+.skin b { display: block; font-size: 20px; }
+.skin span { display: block; font-size: 14px; color: var(--madeup-color-ink-muted); }
+.skin.won { background: var(--madeup-color-accent); border-color: var(--madeup-color-accent); color: var(--ac-on-accent); }
+.skin.won span { color: inherit; opacity: .8; }
+.skin.level { border-style: dashed; }
+.skins.mini { gap: 3px; }
+.skins.mini .skin { height: 6px; padding: 0; border-radius: 3px; }
+.skins.mini .skin:not(.won) { background: var(--madeup-color-border); border-color: transparent; }
+
+/* ---------------------------------------------------------------- home */
+.hero { padding: var(--madeup-space-2) 0 var(--madeup-space-5); }
+.record { display: flex; gap: var(--madeup-space-5); margin: var(--madeup-space-1) 0 var(--madeup-space-3); }
+.record div { display: flex; flex-direction: column; }
+.record .big + span { font-size: 15px; color: var(--madeup-color-ink-muted); }
+.record .won .big { color: var(--ac-accent-ink); }
+.avgs { display: flex; gap: var(--madeup-space-5); font-size: 16px; color: var(--madeup-color-ink-muted); }
+.avgs b { color: var(--madeup-color-ink); font-variant-numeric: tabular-nums; }
+.score-line { display: flex; align-items: baseline; gap: var(--madeup-space-3); margin: var(--madeup-space-1) 0 var(--madeup-space-3); }
+.excerpt {
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  color: var(--madeup-color-ink-muted); margin: 0;
+}
+.card .pad-right { padding-right: var(--madeup-space-5); }

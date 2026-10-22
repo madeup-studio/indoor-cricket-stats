@@ -112,3 +112,4 @@ def test_viewer_tests_not_copied(tmp_path):
     import build_site as B
     B.build(str(tmp_path))
     assert not list(tmp_path.rglob("*.test.js")) and not (tmp_path / "tests").exists()
+    assert not (tmp_path / "package.json").exists()      # dev-only (node --test)
