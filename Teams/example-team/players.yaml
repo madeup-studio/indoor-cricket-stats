@@ -1,0 +1,42 @@
+# Team player list & name registry (one per team).
+#   as    : exactly how the name is printed on a scorecard (do not change).
+#   name  : the confirmed full name. Fill this in to clear an ambiguity; the
+#           reports then show this instead of the scorecard spelling.
+#   aka   : optional OTHER scorecard spellings that are the SAME person
+#           (they get merged together in the season stats).
+# Refresh after adding scorecards:  python scripts/roster.py --refresh
+roster:
+  # -- Our Team --
+  - as: "Our P1"  # Our Team
+    name: "Our P1"
+  - as: "Our P2"  # Our Team
+    name: "Our P2"
+  - as: "Our P3"  # Our Team
+    name: "Our P3"
+  - as: "Our P4"  # Our Team
+    name: "Our P4"
+  - as: "Our P5"  # Our Team
+    name: "Our P5"
+  - as: "Our P6"  # Our Team
+    name: "Our P6"
+  - as: "Our P7"  # Our Team
+    name: "Our P7"
+  - as: "Our P8"  # Our Team
+    name: "Our P8"
+  # -- Opponents --
+  - as: "Opp P1"  # Opponents
+    name: "Opp P1"
+  - as: "Opp P2"  # Opponents
+    name: "Opp P2"
+  - as: "Opp P3"  # Opponents
+    name: "Opp P3"
+  - as: "Opp P4"  # Opponents
+    name: "Opp P4"
+  - as: "Opp P5"  # Opponents
+    name: "Opp P5"
+  - as: "Opp P6"  # Opponents
+    name: "Opp P6"
+  - as: "Opp P7"  # Opponents
+    name: "Opp P7"
+  - as: "Opp P8"  # Opponents
+    name: "Opp P8"

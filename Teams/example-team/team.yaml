@@ -1,0 +1,8 @@
+# Team settings — read by every script (see scripts/paths.py).
+name: "Our Team"                      # exactly as printed on the scorecards
+badge: "OURS"                         # short text for the report logo (max ~4 chars)
+arena: "Example Arena"                # where the team plays (the arena runs the leagues)
+league: "Mens E"                      # current league at the arena (informational)
+colours:                              # report brand colours (hex)
+  brand: "#4f46e5"
+  gold: "#f5b301"
