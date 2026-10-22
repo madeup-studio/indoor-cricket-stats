@@ -1,6 +1,6 @@
 ---
 name: add-scorecard
-description: Turn a new action-cricket scorecard photo into a verified game record, then refresh the season stats, PDF stat cards and the AI Coach letter. Use when the user shares or mentions a new scorecard (photo, WhatsApp image, "latest scorecard", "update the stats"), points at a photo in inbox/ or Downloads, or is setting up their team for the first time.
+description: Turn a new action-cricket scorecard photo into a verified game record, then refresh the stats, write the AI Coach's letter for the game and publish the team's app. Use when the user shares or mentions a new scorecard (photo, WhatsApp image, "new scorecard", "latest scorecard", "update the stats"), a league table or a note for the coach, or is setting up their team for the first time.
 ---
 
 # Add a scorecard
@@ -8,32 +8,32 @@ description: Turn a new action-cricket scorecard photo into a verified game reco
 > **Paths:** run scripts as `python $ENGINE/scripts/<script>.py` from the repo root, where
 > `$ENGINE` is `engine` in a team repo and `.` in the engine repo itself.
 
-One Spawtz action-cricket scorecard photo in → a verified game file, updated stats,
-PDFs and a fresh coach letter out. **Accuracy is the whole point: every number must
-reconcile.** Claude reads the photo and writes the letter; the scripts do all the maths.
+One Spawtz scorecard photo in → a verified game file, updated stats, the coach's
+letter and a published app out. **Accuracy is the whole point: every number must
+reconcile.** You read the photo and write the letter; the scripts do all the maths.
+The user is usually on a phone: keep questions few, short and in plain words.
 
-## 0. First run — set up the team
+## 0. Before you start
 
-If no folder under `Teams/` has a `team.yaml`:
-
-1. Read the scorecard. The two team names are in the Skins box at the top. Ask the
-   user which one is theirs (it must be spelled exactly as printed).
-2. The card's `League:` line reads `<arena> - <season> - <league>`, e.g.
-   `Example Arena - Spring 2026 - Mens E`.
-3. Run `python $ENGINE/scripts/new_team.py "<team name as printed>" --arena "<arena>"`.
-   Optional: `--badge ABC` (2–4 characters for the report logo); brand colours can be
-   changed later in `team.yaml`.
+- **No team yet** (no `Teams/*/team.yaml`): run the `setup` skill, or for just the
+  team: read the card (the two team names are in the Skins box), ask which is theirs
+  (spelled exactly as printed) and run
+  `python $ENGINE/scripts/new_team.py "<name as printed>" --arena "<arena>" --league "<league>"`.
+  The card's `League:` line reads `<arena> - <season> - <league>`.
+- **Admins:** if the team's `team.yaml` lists `admins:` and `git config user.email` is
+  not one of them, don't touch that team — tell the user and stop.
 
 ## 1. Find the photo and its season
 
-- New photos are in `inbox/` unless the user says otherwise (e.g. Downloads).
+- The photo is attached in the chat, or in `inbox/` (or wherever the user says).
+  Save it into `<season>/scorecards/` (keep its filename). If the attachment is not
+  available as a file, transcribe from the image you see, say so, and set
+  `meta.source_image` to null.
 - The season is printed on the card. Find `Teams/<TEAM>/<YYYY-MM-DD>/` whose games
-  are that season (check `meta.season` in one of its `data/*.json`). If there is none,
-  it's a new season: ask the user for the season's start date (the arena website
-  lists it; if they don't know, use this game's date) and run
+  are that season (`meta.season` in its `data/*.json`). None → a new season: ask for
+  its start date (the arena's website lists it; else use this game's date) and run
   `python $ENGINE/scripts/new_team.py --season-start <YYYY-MM-DD>`.
 - Skip it if that date + opponent is already in `data/`.
-- Move the photo into `<season>/scorecards/` (keep its filename).
 
 ## 2. Transcribe
 
@@ -54,8 +54,12 @@ python $ENGINE/scripts/validate_ballbyball.py      # must end with "ALL RECONCIL
 Fix any failure by re-reading the card (re-crop that band larger), never by bending
 a total to fit a guess. A genuinely unreadable cell: best-guess it so the over, the
 batter's RS and the bowler's RC/Wkts all reconcile (rule in TRANSCRIBE.md). If the
-card itself breaks the 6-balls-an-over law, ask the user, then record it in
-`meta.ball_count_exceptions`.
+card itself breaks the ball-count law, ask the user, then record it in
+`meta.ball_count_exceptions`. **A game that doesn't reconcile is never published.**
+
+**3b. Rules snapshot.** If the new game file has no `meta.rules`, add the team's
+rules (`team.yaml` → `rules`, every key written out: the preset's values plus any
+overrides) so the game keeps the rules it was scored under.
 
 ## 4. Player names
 
@@ -63,33 +67,40 @@ card itself breaks the 6-balls-an-over law, ask the user, then record it in
 python $ENGINE/scripts/roster.py --check
 ```
 
-- If `players.yaml` has no entries yet (first game), run
-  `python $ENGINE/scripts/roster.py --refresh` to create them.
-- Otherwise add each new name to `players.yaml` by hand (this keeps the comments):
+- First game (`players.yaml` empty): `python $ENGINE/scripts/roster.py --refresh`.
+- Otherwise add each new name to `players.yaml` by hand (keeps the comments):
   `- as: "<exactly as printed>"  # <team>` with `name: "<display name>"`.
-- **Our players:** ask the user whether a new spelling is an existing player (add it
-  to that player's `aka:` list) or a new one. Names printed as `X Unknown` had no
-  surname; ask what to show.
+- **Our players:** ask whether a new spelling is an existing player (add it to that
+  player's `aka:`) or someone new. `X Unknown` = no surname printed; ask what to show.
 - **Opponents:** register them; ask only if a name matches someone on another team.
-  If both teams field the same printed name in one game, add a marker to the
-  opponent's (e.g. `"sam Unknown (K)"`) in the game JSON and say so in `meta.notes`.
 
-## 5. Reports and the coach letter
+## 5. Stats
 
 ```bash
 python $ENGINE/scripts/generate_stats.py
-python $ENGINE/scripts/generate_pdf_report.py
 ```
 
-If the PDF step warns about a stale coach letter, use the **ai-coach** skill to write
-a fresh one, then re-run `generate_pdf_report.py` until there are no warnings.
+**5b. Ask for the standings and notes** — once, in one message:
+"Got a screenshot of the standings? Attach it and I'll add it for the coach — or
+say skip. Anything else from the game worth passing on (a great catch, some banter)?"
+- A table → transcribe it faithfully as a markdown table into
+  `<season>/context/<date>-standings.md` (date = the game's date).
+- A note → `<season>/context/<date>-note.md`, in the user's words.
+- "skip" → carry on. Standings never feed the stats.
 
-## 6. Wrap up
+## 6. The coach's letter
+
+If `team.yaml` → `coach.enabled` is not false, use the **ai-coach** skill:
+`python $ENGINE/scripts/coach.py --status` lists the new game; write its letter.
+Only if `team.yaml` → `pdf` is true: `python $ENGINE/scripts/generate_pdf_report.py`
+(no `!!` warnings).
+
+## 7. Wrap up and publish
 
 - Add the game to `Teams/<TEAM>/seasons.md` (date, opponent, result, score, skins,
   league, one-line note).
-- Tell the user: the result, anything you best-guessed or still need them to
-  confirm, and where the PDFs are: `Teams/<TEAM>/<season>/<TEAM>-<season>.pdf`
-  (season card) and `Teams/<TEAM>/<TEAM>-all-time.pdf`.
-- League table screenshots, fixtures or banter the user sends go into
-  `<season>/context/YYYY-MM-DD-<topic>.md`; the coach reads that folder.
+- Publish: `python $ENGINE/scripts/publish.py "Game <date> vs <opponent>"`.
+- Tell the user in a few lines: the result, anything you best-guessed or still need
+  them to confirm, and that the app updates within a minute (or, if the script says
+  there is no remote yet, that `/setup` connects the app). Mention PDFs only when
+  `pdf` is on.
