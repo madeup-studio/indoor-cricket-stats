@@ -115,10 +115,11 @@ def create_team(name, folder, arena, badge, league="", preset=rules.DEFAULT_PRES
           "| Season | League | Folder | Games transcribed |\n"
           "|--------|--------|--------|-------------------|\n")
     write(os.path.join(team_dir, "coach_notes.yaml"),
-          "# AI Coach letters — one `_letter` per SEASON (key = season name as printed on the\n"
-          "# scorecards, e.g. \"Spring 2026\"), rendered as page 1 of that season's stat card.\n"
-          "#   _letter: {fp, sections: [{title, html}], players: [{name, note}]}\n"
-          "# Written by Claude with the ai-coach skill; a new scorecard makes a letter stale.\n")
+          "# AI Coach letters — one per game, written by Claude with the ai-coach skill and\n"
+          "# never rewritten (see scripts/coach.py):\n"
+          "#   - {game: \"<date>[-<opponent-slug>]\", fp, sections: [{title, html}],\n"
+          "#      players: [{name, note}]}\n"
+          "letters: []\n")
     write(os.path.join(team_dir, "photos", "README.txt"),
           "Player photos for the PDF report's player pages.\n\n"
           "One image per player, named by the player's display name in lowercase-kebab\n"

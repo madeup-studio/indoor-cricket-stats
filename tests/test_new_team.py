@@ -23,3 +23,10 @@ def test_new_team_tone_and_preset_options(tmp_path, run_script):
     assert r.returncode == 0, r.stderr
     cfg = yaml.safe_load((teams / "zed" / "team.yaml").read_text(encoding="utf-8"))
     assert cfg["coach"]["tone"] == "serious" and cfg["gate"] == "none"
+
+
+def test_new_team_coach_notes_per_game(tmp_path, run_script):
+    teams = tmp_path / "Teams"
+    run_script("new_team.py", "Zed Team", "--folder", "zed", env={"TEAMS_DIR": str(teams)})
+    text = (teams / "zed" / "coach_notes.yaml").read_text(encoding="utf-8")
+    assert yaml.safe_load(text) == {"letters": []} and "_letter" not in text

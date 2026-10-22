@@ -22,3 +22,7 @@ Thumbs.db
 # Team data never lives here (public repo) — only the example team is allowed
 Teams/*
 !Teams/example-team/
+
+# Generated reports (PDF stat cards and their HTML build)
+*.pdf
+Teams/*/.build/

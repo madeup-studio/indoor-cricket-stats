@@ -8,23 +8,21 @@ pages (page_team_season / page_team_alltime), so a change meant for one card goe
 that card's functions only. Today they differ by rule: the season card's results
 table lists every game of the season; the all-time card lists the last 15 games.
 Builds a self-contained print-styled HTML and prints it to PDF with a headless Edge or Chrome
-(override with the PDF_BROWSER env var). No browser found -> the HTML is still built.
+(override with the PDF_BROWSER env var; PDF_BROWSER=none builds the HTML only). No browser
+found -> the HTML is still built.
 Run:  python scripts/generate_pdf_report.py
 """
 import os, sys, shutil, subprocess, datetime, html, math, base64
 import yaml
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import report_data as RD
-import paths
+import paths, coach
 
-# Hand-written AI coach letters (authored by Claude per season scope under the
-# `_letter` key, cached here so the build stays offline/deterministic). Each letter
-# carries a team-level stats fingerprint; when a new scorecard lands the letter is
-# stale and a rule-based fallback is used until Claude writes a fresh one (/ai-coach).
-COACH_FILE = os.path.join(paths.TEAM_DIR, "coach_notes.yaml")
-COACH_NOTES = (yaml.safe_load(open(COACH_FILE, encoding="utf-8"))
-               if os.path.exists(COACH_FILE) else None) or {}
-_coach_stale = []   # (scope, player, fingerprint) that fell back to the rule engine
+# AI coach letters: one per game (coach_notes.yaml -> letters, written by Claude with
+# the ai-coach skill, cached so the build stays offline/deterministic). A season card
+# shows the newest letter of that season whose fingerprint still matches; until one
+# exists a rule-based fallback is shown and the end of the run lists what is missing.
+LETTERS = coach.load_letters(paths.TEAM_DIR)
 
 BUILD_DIR = os.path.join(paths.TEAM_DIR, ".build")
 
@@ -32,7 +30,7 @@ def find_browser():
     """A Chromium-based browser that can print HTML to PDF: PDF_BROWSER env var, else
     Edge or Chrome in their usual Windows / macOS / Linux locations."""
     if os.environ.get("PDF_BROWSER"):
-        return os.environ["PDF_BROWSER"]
+        return None if os.environ["PDF_BROWSER"].lower() == "none" else os.environ["PDF_BROWSER"]
     roots = [os.environ.get(k, "") for k in ("ProgramFiles(x86)", "ProgramFiles", "LOCALAPPDATA")]
     candidates = [os.path.join(r, *sub) for r in roots if r for sub in (
         ("Microsoft", "Edge", "Application", "msedge.exe"),
@@ -605,13 +603,6 @@ def page_bowling(scope, sub, d):
 </section>"""
 
 
-def team_fp(t):
-    """Fingerprint for the coach letter — changes whenever a game is added or an
-    existing scorecard is corrected."""
-    last = t["games"][-1]["date"] if t["games"] else "none"
-    return f"{t['played']}g{t['runs_for']}f{t['runs_against']}a-{last}"
-
-
 def _rank_moves(d, cat):
     """(name, old_rank, new_rank) for ranked players whose position in cat
     (batting/bowling/allround) changed with the newest game; biggest climb first."""
@@ -711,8 +702,8 @@ def bowling_coach_fallback(d):
 
 
 def coach_letter_fallback(d):
-    """FALLBACK letter body (rule-based) shown until Claude authors a fresh
-    `_letter` for the scope via /ai-coach: the last game, batting and bowling
+    """FALLBACK letter body (rule-based) shown until Claude writes the letter for
+    the season's newest game via /ai-coach: the last game, batting and bowling
     reads from the rule engines, no player-by-player section."""
     return [
         {"title": "The last game", "html": f"<p>{team_coach_fallback(d)}</p>"},
@@ -721,19 +712,16 @@ def coach_letter_fallback(d):
     ]
 
 
-def page_coach_letter(scope, sub, d):
+def page_coach_letter(scope, sub, d, matches, history):
     """Page 1 of the SEASON stat card: the coach's letter to the team — the last
     game's story, league standing, advice, batting/bowling reads, then a word to
-    each player. Authored via /ai-coach into coach_notes.yaml under the season
-    scope's `_letter` key: {fp, sections: [{title, html}], players: [{name, note}]}.
-    A stale/missing letter falls back to the rule engines and flags the console."""
-    scope_key = scope.replace(" · current", "")
-    fp = team_fp(d["team"])
-    entry = (COACH_NOTES.get(scope_key) or {}).get("_letter")
-    if entry and str(entry.get("fp")) == fp and entry.get("sections"):
+    each player. The newest letter of the season whose fingerprint still matches
+    (coach_notes.yaml -> letters, written per game via /ai-coach); none -> the rule
+    engines' fallback (the end-of-run warnings say which games need a letter)."""
+    _, entry = coach.latest_letter(matches, LETTERS, history)
+    if entry:
         sections, players = entry["sections"], entry.get("players") or []
     else:
-        _coach_stale.append((scope_key, "_letter", fp))
         sections, players = coach_letter_fallback(d), []
     body = "".join(
         f"<div class='lsec'><div class='lsect'>{esc(s['title'])}</div>{s['html']}</div>"
@@ -785,7 +773,8 @@ def page_player(scope, sub, d, idx):
 
     # ---- batting ----
     if b and b["balls"]:
-        runs_lost = 5 * b["outs"] / b["games"]
+        wv = abs(paths.RULES["wicket_runs"])        # runs a dismissal costs (team rules)
+        runs_lost = wv * b["outs"] / b["games"]
         bt = "".join([
             tile(num(b["rs"]), "Runs", f"{b['balls']} balls · {b['games']} {gm}"),
             tile(f"{b['avg12']:.1f}", "Avg/12", "runs per 2 overs faced"),
@@ -793,7 +782,7 @@ def page_player(scope, sub, d, idx):
             tile(fmt_score(b["hs"]), "Highest score", f"vs {b['hs'][3]}"),
             tile(fmt_score(b["ls"]), "Lowest score", f"vs {b['ls'][3]}"),
             tile(f"{b['outs'] / b['games']:.1f}", "Outs / game", f"{b['outs']} outs total"),
-            tile(f"−{runs_lost:.1f}", "Runs lost to wickets / game", "5 × outs ÷ games",
+            tile(f"−{runs_lost:.1f}", "Runs lost to wickets / game", f"{wv} × outs ÷ games",
                  accent=PAL["bad"]),
         ])
         out_items = [(n, b["outs_by_type"].get(n, 0), c) for n, c in WKT_GROUPS]
@@ -1014,11 +1003,12 @@ def render_doc(pages, scope, out_pdf, gen):
               f"Close it and re-run.")
 
 
-def _doc_season(scope, sub, d, out_pdf, gen):
+def _doc_season(scope, sub, d, out_pdf, gen, matches, history):
     """SEASON stat card. Season-card-only page changes are wired up here.
-    Opens with the Letter from the Coach — the only page carrying AI content."""
-    pages = [page_coach_letter(scope, sub, d), page_team_season(scope, sub, d),
-             page_batting(scope, sub, d), page_bowling(scope, sub, d)]
+    Opens with the Letter from the Coach — the only page carrying AI content —
+    unless the team switched the coach off (team.yaml coach.enabled: false)."""
+    pages = ([page_coach_letter(scope, sub, d, matches, history)] if paths.COACH["enabled"] else [])
+    pages += [page_team_season(scope, sub, d), page_batting(scope, sub, d), page_bowling(scope, sub, d)]
     pages += [page_player(scope, sub, d, i) for i in range(len(d["allround"]))]
     render_doc(pages, sub, out_pdf, gen)
 
@@ -1040,18 +1030,18 @@ def main():
     for sd, label, ms in seasons:
         tag = " · current" if sd == latest else ""
         _doc_season(f"{label}{tag}", f"Season · {label}", RD.build(ms, R),
-                    os.path.join(sd, f"{paths.TEAM}-{slug(label)}.pdf"), gen)
+                    os.path.join(sd, f"{paths.TEAM}-{slug(label)}.pdf"), gen, ms, allm)
 
     # combined all-time stat card -> lives in the team folder
     _doc_alltime("All-time", f"All-time · {len(seasons)} seasons", RD.build(allm, R, alltime=True),
                  os.path.join(paths.TEAM_DIR, f"{paths.TEAM}-all-time.pdf"), gen)
 
-    if _coach_stale:
-        print(f"\n!! {len(_coach_stale)} coach letter(s) used the FALLBACK "
-              f"(missing or stale `_letter` in coach_notes.yaml).")
-        print("   Ask Claude to refresh (the /ai-coach skill) for:")
-        for sc, nm, fp in _coach_stale:
-            print(f"     - [{sc}] {nm}  (fp: {fp})")
+    todo = [r for r in coach.status(seasons, LETTERS) if r["state"] != "ok"]
+    if paths.COACH["enabled"] and todo:
+        print()
+        for r in todo:
+            print(f"!! coach letter {r['state']}: {r['key']} {r['fp']}")
+        print("   Ask Claude to write them (the ai-coach skill), oldest first.")
 
 
 if __name__ == "__main__":

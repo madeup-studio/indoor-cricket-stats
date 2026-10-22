@@ -1,1 +1,58 @@
-letters: []
+# AI Coach letters — one per game, never rewritten (see scripts/coach.py).
+letters:
+- game: '2026-10-07'
+  fp: 1g51f80a-2026-10-07
+  sections:
+  - title: The game
+    html: '<p>Lost <b>51–80</b> to Opponents and took <b>one skin out of four</b>. It started like a heist:
+      Our P1 and Our P2 opened with <b>28 off skin 1</b> and won it by 13. Then the vault door swung shut
+      — we scored <b>6, 6 and 11</b> in the last three skins while they piled on 21, 15 and 29.</p><p>Player
+      of the match went to Opp P7 (<b>22 runs and 3 wickets, +27</b>), and the spreadsheet can''t argue.
+      Our best on the night was <b>Our P2 at +5</b>: 11 runs and 3 wickets for 6. Our P3''s <b>4 wickets
+      for −6</b> deserve a frame on the wall too.</p>'
+  - title: Advice, learnings & homework
+    html: '<p><b>Stop paying the toll.</b> We were out <b>17 times — at 5 runs each that is 85 runs</b>,
+      more than the 80 they scored. Five of those were <b>run outs (25 runs)</b>: call loud, call early,
+      and run only on yes.</p><p><b>Keep it on the mat.</b> We bowled <b>13 wides and 4 no-balls ≈ 34
+      free runs</b>, almost half their total. Homework: halve it next game — under 9 extras.</p><p>The
+      league table is missing from the coach''s desk — can someone post the latest standings before the
+      next game?</p>'
+  - title: On the batting
+    html: '<p>Our P7 had the best rate (<b>15.0 per 12 balls</b>) and Our P1 the top score (<b>17, with
+      a 7</b>), but the scoreboard was a story of wickets: Our P3 (4 outs), Our P6 and Our P8 (3 each)
+      spent the night walking back. The skin-1 pair of <b>Our P1 and Our P2 (28)</b> showed the blueprint
+      — copy it in skins 2–4.</p>'
+  - title: On the bowling
+    html: <p>Our P3 led the attack with <b>4 wickets and −6 runs</b> (economy −3.0) and Our P2 chipped
+      in <b>3 for 6</b>. The best defence was skin 1, held to <b>15 runs</b>, with Our P4 taking 2 wickets
+      for 2. The fielders ran out three batters off our bowling — good hands; now let the bowlers stop
+      gifting the runs back in wides.</p>
+  players:
+  - name: Our P2
+    note: 'Coach''s pick: <b>+5</b>, the only positive number in the squad, from 11 runs and 3 for 6.
+      Skin 1 with Our P1 was the night''s highlight. Next game: same again, and drag a teammate into the
+      plus column.'
+  - name: Our P7
+    note: '<b>Exactly 0</b> — 15 runs scored, 15 conceded, perfectly balanced as all things should be.
+      Best batting rate in the team (15.0 per 12 balls). Next game: tighten the second over and you''re
+      in profit.'
+  - name: Our P3
+    note: 'The night''s contradiction: <b>4 wickets for −6</b> with the ball, <b>out 4 times for −7</b>
+      with the bat. Two of those were run outs. Next game: keep the bowling, and treat your wicket like
+      it costs 5 runs — because it does.'
+  - name: Our P1
+    note: 'Top score with <b>17, including a 7</b>, and the skin-1 partnership that won us our only skin.
+      But <b>3 wides and a no-ball</b> handed some of it back. Next game: same bat, straighter arm.'
+  - name: Our P4
+    note: '<b>13 runs</b> and <b>2 wickets for 2</b> in the best defended skin of the night. One run out
+      spoiled an otherwise tidy evening. Next game: back yourself in skin 2 — the team needs a second
+      20-run pair.'
+  - name: Our P5
+    note: 'Two wickets, but <b>6 extras</b> — the most generous arm on show, roughly 12 free runs. Five
+      runs with the bat from two outs. Next game: two overs, zero wides; the coach will be counting.'
+  - name: Our P6
+    note: 'A quiet night: <b>1 run, out 3 times</b> (stumped twice — the keeper says thanks) and <b>1
+      for 11</b> with the ball. Next game: stay behind the crease and make the keeper earn it.'
+  - name: Our P8
+    note: '<b>−17</b> overall, the roughest night in the squad: −4 with the bat after three outs, and
+      13 conceded without a wicket. Everyone has one of these. Next game: one boundary early, then build.'
