@@ -379,3 +379,25 @@ a.game-row:active { background: var(--madeup-color-surface); }
 .spark-zero { stroke: var(--madeup-color-border); stroke-width: 1; stroke-dasharray: 3 3; }
 .spark-dot { fill: var(--ac-accent-ink); }
 .sum.log .dt { white-space: nowrap; color: var(--madeup-color-ink-muted); font-size: 15px; width: 3.6em; }
+
+/* ---------------------------------------------------------------- records */
+.scope-note { margin-top: calc(-1 * var(--madeup-space-3)); }
+h2.group { font-size: 20px; margin: var(--madeup-space-5) 0 var(--madeup-space-3); }
+.rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); column-gap: var(--madeup-space-3); }
+.rec-wrap { position: relative; }
+.rec-wrap > .help { position: absolute; top: var(--madeup-space-3); right: var(--madeup-space-6); }
+.card.rec { display: flex; flex-direction: column; gap: 2px; }
+.rec .rec-val { color: var(--madeup-color-ink); overflow-wrap: anywhere; }
+.rec .rec-who { font-weight: 600; padding-right: var(--madeup-space-5); }
+.rec .rec-where { font-size: 15px; color: var(--madeup-color-ink-muted); }
+.rec .label { padding-right: var(--madeup-space-7); }
+
+/* ---------------------------------------------------------------- team picker */
+.picker { width: min(320px, calc(100vw - 16px)); }
+.team-list { list-style: none; margin: var(--madeup-space-2) 0 0; padding: 0; }
+.team-list a {
+  display: flex; align-items: center; gap: var(--madeup-space-3);
+  padding: var(--madeup-space-2) 0; color: inherit; text-decoration: none; font-weight: 600;
+}
+.team-list a[aria-current="true"] { color: var(--ac-accent-ink); }
+.badge.mini { min-width: 36px; height: 32px; display: inline-grid; place-items: center; font-size: 12px; }

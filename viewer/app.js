@@ -2,6 +2,8 @@
 // Screens live in screens/*.js and register themselves in `screens` (also exposed
 // as window.AC.screens). The viewer never computes stats: it shows data/<team>.json.
 import { matchRoute, routeHash } from "./router.js";
+import { defaultScope, resolveScope as pickScope } from "./scope.js";
+import { closePopover } from "./help.js";
 
 export const screens = {};
 export const state = { teams: [], team: null, data: null, scope: null, route: null, chosen: false };
@@ -117,19 +119,8 @@ export function setScope(key) {
   state.chosen = true;
   try { sessionStorage.setItem(SCOPE_KEY, key); } catch { /* private mode: fine */ }
 }
-export function defaultScope(routeName, data) {
-  if (routeName === "records") return "alltime";
-  const seasons = data?.seasons || [];
-  return seasons.length ? seasons[seasons.length - 1].key : "alltime";
-}
-function validScope(data, key) {
-  return key === "alltime" || !!seasonOf(data, key);
-}
-export function resolveScope(routeName, data) {
-  const chosen = readChosen();
-  if (chosen && validScope(data, chosen)) return chosen;
-  return defaultScope(routeName, data);
-}
+export { defaultScope };
+export const resolveScope = (routeName, data) => pickScope(routeName, data, readChosen());
 
 // ---------------------------------------------------------------- loading
 async function getJSON(url) {
@@ -156,8 +147,12 @@ function applyTeam(team) {
   else root.removeProperty("--madeup-color-accent");
   if (HEX.test(c.gold || "")) root.setProperty("--ac-gold", c.gold);
   document.title = team.name;
-  $("#badge").textContent = team.badge || team.name.slice(0, 4);
-  $("#badge").setAttribute("aria-label", team.name);
+  const badge = $("#badge");
+  badge.textContent = team.badge || team.name.slice(0, 4);
+  const many = state.teams.length > 1;
+  badge.disabled = !many;
+  badge.setAttribute("aria-label", many ? `${team.name}: switch team` : team.name);
+  if (many) badge.setAttribute("aria-haspopup", "dialog"); else badge.removeAttribute("aria-haspopup");
   $("#team-name").textContent = team.name;
 }
 
@@ -317,8 +312,60 @@ screens.home = (ctx) => {
   return h("div", null, hero, cards);
 };
 
+// ---------------------------------------------------------------- team picker
+// Several teams on one site: the badge opens a sheet listing them (popover rules:
+// on <body>, fixed, a bottom sheet on phones, one open at a time, Escape/outside closes).
+let picker = null;
+function closePicker(returnFocus = false) {
+  if (!picker) return;
+  picker.cleanup();
+  picker.el.remove();
+  picker = null;
+  $("#badge").setAttribute("aria-expanded", "false");
+  if (returnFocus) $("#badge").focus();
+}
+function openPicker() {
+  if (picker) return closePicker();
+  closePopover();
+  const current = state.data?.team?.slug;
+  const items = state.teams.map((t) => {
+    const swatch = h("span", { class: "badge mini" }, t.badge || t.name.slice(0, 4));
+    if (HEX.test(t.colours?.brand || "")) swatch.style.background = t.colours.brand;
+    return h("li", null, h("a", { href: routeHash("home", null, t.slug),
+      "aria-current": t.slug === current ? "true" : null, onclick: () => closePicker() }, swatch, t.name));
+  });
+  const el = h("div", { class: "popover picker", role: "dialog", "aria-label": "Choose a team" },
+    h("strong", null, "Teams"), h("ul", { class: "team-list" }, items));
+  document.body.append(el);
+  const badge = $("#badge");
+  const place = () => {
+    if (window.innerWidth < 500) { el.classList.add("sheet"); el.style.left = el.style.top = ""; return; }
+    el.classList.remove("sheet");
+    const r = badge.getBoundingClientRect();
+    el.style.left = `${Math.max(8, Math.min(r.left, window.innerWidth - el.offsetWidth - 8))}px`;
+    el.style.top = `${r.bottom + 8}px`;
+  };
+  const onDown = (e) => { if (!el.contains(e.target) && !badge.contains(e.target)) closePicker(); };
+  const onKey = (e) => { if (e.key === "Escape") closePicker(true); };
+  const onNav = () => closePicker();
+  window.addEventListener("resize", place);
+  window.addEventListener("hashchange", onNav);
+  document.addEventListener("pointerdown", onDown, true);
+  document.addEventListener("keydown", onKey);
+  picker = { el, cleanup: () => {
+    window.removeEventListener("resize", place);
+    window.removeEventListener("hashchange", onNav);
+    document.removeEventListener("pointerdown", onDown, true);
+    document.removeEventListener("keydown", onKey);
+  } };
+  badge.setAttribute("aria-expanded", "true");
+  place();
+  el.querySelector("a")?.focus();
+}
+
 // ---------------------------------------------------------------- boot
 function boot() {
+  $("#badge").addEventListener("click", () => { if (state.teams.length > 1) openPicker(); });
   $("#scope").addEventListener("change", (e) => { setScope(e.target.value); render(); });
   window.addEventListener("hashchange", render);
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
