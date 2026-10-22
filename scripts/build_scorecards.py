@@ -7,7 +7,7 @@ data/<date>.json is the SOURCE OF TRUTH per game (both teams, both innings in
 batting order). Re-run this after editing it:  python scripts/build_scorecards.py
 """
 import json, glob, os, re
-import paths
+import paths, rules
 
 
 def q(s):
@@ -100,6 +100,8 @@ def build(game, out_dir):
     ours_sum = order_summary(game["summaries"][team], ours_inn["batting"])
     opp_sum = order_summary(game["summaries"][opp], opp_inn["batting"])
     outcome_word = {"win": "won", "loss": "lost", "tie": "tied"}[res["outcome"]]
+    wr = rules.game_rules(game, paths.RULES)["wicket_runs"]      # this game's dismissal value
+    wr_txt = ("−%d" % -wr) if wr < 0 else "%+d" % wr        # e.g. −5 (typographic minus)
     # arena = the venue that runs the leagues (e.g. Example Arena);
     # league = the ability tier, e.g. "Mens E" (promotion/relegation between them).
     if "arena" in meta:
@@ -129,7 +131,7 @@ def build(game, out_dir):
     F += ["  - %s" % fmt_summary(r) for r in opp_sum]
     F.append("")
     F.append("# Ball-by-ball (VERIFIED: checksums reconcile). balls: int=runs off bat,")
-    F.append("# R/C/B/S/L/H/M = dismissal (-5): run out/caught/bowled/stumped/lbw/hit wkt/mankad; w/nb = extras.")
+    F.append("# R/C/B/S/L/H/M = dismissal (%d): run out/caught/bowled/stumped/lbw/hit wkt/mankad; w/nb = extras." % wr)
     F.append("# *_batting_seq (when present) = exact delivery order per over: [batter, ball] pairs.")
     F += ["ball_by_ball:", "  status: verified", "  team_batting:",
           batting_yaml(ours_inn["batting"]), "  opponent_batting:",
@@ -162,8 +164,8 @@ def build(game, out_dir):
                         r["wkts"], num(r["econ"]), r["c"]))
         B.append("")
     B += ["## Ball-by-ball", "",
-          "_Format: `Bowler [balls]=over total`. Dismissals worth −5: "
-          "R=run out, C=caught, B=bowled, S=stumped, L=lbw, H=hit wicket, M=mankad; w/nb=extras._", "",
+          "_Format: `Bowler [balls]=over total`. Dismissals worth %s: "
+          "R=run out, C=caught, B=bowled, S=stumped, L=lbw, H=hit wicket, M=mankad; w/nb=extras._" % wr_txt, "",
           "**%s batting**" % team, "", render_bbb_lines(ours_inn["batting"]), "",
           "**%s batting**" % opp, "", render_bbb_lines(opp_inn["batting"]), ""]
     for label, inn in [(team, ours_inn), (opp, opp_inn)]:

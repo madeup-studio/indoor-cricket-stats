@@ -25,3 +25,12 @@ def _run_script(name, *args, env=None):
 @pytest.fixture
 def run_script():
     return _run_script
+
+
+@pytest.fixture
+def tmp_team(tmp_path):
+    """A copy of Teams/example-team under tmp_path/Teams; returns that Teams dir."""
+    import shutil
+    teams = tmp_path / "Teams"
+    shutil.copytree(os.path.join(REPO, "Teams", "example-team"), teams / "example-team")
+    return teams

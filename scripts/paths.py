@@ -12,15 +12,36 @@
       stats/                    generated season report (.md + .html)
       context/                  league table, banter, anything the AI Coach should know
 
-The team is the TEAM env var if set, otherwise the only folder in Teams/ that has a
-team.yaml. Optionally restrict to one season with the SEASON env var
-(e.g. SEASON=2026-08-08). Create a team with scripts/new_team.py.
+Teams/ is found by find_root() (or the TEAMS_DIR env var). The team is the TEAM
+env var if set, otherwise the only folder in Teams/ that has a team.yaml.
+Optionally restrict to one season with the SEASON env var (e.g. SEASON=2026-08-08).
+Create a team with scripts/new_team.py.
 """
 import os, re, sys
 import yaml
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import rules as _rules
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEAMS_DIR = os.path.join(ROOT, "Teams")
+ENGINE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def find_root(start):
+    """The nearest ancestor of `start` (inclusive, up to 4 levels) holding a Teams/
+    folder: the team repo root when the engine is vendored under engine/, the
+    engine's own root otherwise."""
+    d = os.path.abspath(start)
+    for _ in range(5):
+        if os.path.isdir(os.path.join(d, "Teams")):
+            return d
+        parent = os.path.dirname(d)
+        if parent == d:
+            break
+        d = parent
+    return ENGINE_ROOT
+
+
+ROOT = find_root(os.path.dirname(os.path.abspath(__file__)))
+TEAMS_DIR = os.environ.get("TEAMS_DIR") or os.path.join(ROOT, "Teams")
 
 
 def team_folders():
@@ -52,6 +73,9 @@ TEAM_NAME = TEAM_CFG.get("name") or TEAM          # exactly as printed on the sc
 BADGE = TEAM_CFG.get("badge") or TEAM_NAME[:4]    # short text for the report logo
 ARENA = TEAM_CFG.get("arena") or ""               # e.g. "Example Arena"
 COLOURS = TEAM_CFG.get("colours") or {}           # optional: brand, gold (hex)
+RULES = _rules.load_rules(TEAM_CFG)               # scoring rules (see scripts/rules.py)
+COACH = {"enabled": True, "tone": "banter", "language": "en", **(TEAM_CFG.get("coach") or {})}
+GATE = TEAM_CFG.get("gate") or "pin"              # how viewers get in: pin | email | none
 
 SEASON_RE = re.compile(r"\d{4}-\d{2}-\d{2}$")
 

@@ -8,6 +8,13 @@ JSON for our team (its name, exactly as printed on the cards, is `name` in
 Action cricket: 2 teams × 8 players, batting in **4 pairs = 4 skins**; each pair
 faces 4 overs (one per opposing bowler; each bowler bowls 2 overs, so OB=2).
 
+**Rules come from the team.** The scoring constants used below are the team's
+`rules` in `team.yaml` (defaults in brackets): `wicket_runs` (−5), `extra_runs` (2),
+`balls_per_over` (6), `extra_ball_last_over` (true), `skins` (4), `overs_per_pair`
+(4), `players_per_side` (8). Where this guide says "the wicket value" or "an over's
+balls", read the team's value. Copy the team's whole `rules` block into the game's
+`meta.rules` so the game keeps the rules it was scored under.
+
 ## Step 1 — enlarge the grid (the photos are low-res)
 Crop horizontal bands and upscale with the repo tool, into a scratch dir:
 ```
@@ -31,19 +38,25 @@ One table per team; each player row: RS, OB, RC, Wkts, Econ, C. Verify each team
 RS sums to its TOTAL, and C = RS − RC on every row.
 
 ## Step 4 — ball-by-ball, BOTH innings
-Each cell is one ball: integer = runs off the bat (0-7); circled letter = a **−5
-dismissal** (R=run out, C=caught, B=bowled, S=stumped, L=lbw, H=hit wicket, M=mankad);
-w/nb = wide/no-ball extras. The **bold cell** ending each bowler block = that batter's
-runs off that over. The `X/YY` line under a bowler = wickets/runs conceded that over.
+Each cell is one ball: integer = runs off the bat (0-7); circled letter = a
+**dismissal worth the team's `wicket_runs`** (default −5) (R=run out, C=caught,
+B=bowled, S=stumped, L=lbw, H=hit wicket, M=mankad); w/nb = wide/no-ball extras,
+worth `extra_runs` (default 2) plus any runs off them. The **bold cell** ending each
+bowler block = that batter's runs off that over. The `X/YY` line under a bowler =
+wickets/runs conceded that over. An over's total = its runs off the bat + the
+wicket value × its dismissals + its extras, so an over with no `w`/`nb` cell has no
+extra runs (validator [B]).
 
 **Ball-count law (validator [E], user-confirmed):** every cell is ONE delivery and
-an over is EXACTLY 6 cells across the pair — extras are NOT re-bowled, they use up
-a ball. A skin is therefore 24 balls, or 25 when the pair takes the optional extra
-ball at the END of the skin (only the LAST over of a skin may hold 7 cells — the
+an over is EXACTLY `balls_per_over` cells (default 6) across the pair — extras are
+NOT re-bowled, they use up a ball. With the defaults a skin is therefore 24 balls,
+or 25 when the pair takes the optional extra ball at the END of the skin
+(`extra_ball_last_over`; only the LAST over of a skin may hold one extra cell — the
 classic banter case is taking the extra ball and getting out on it). A cell like
 `w¹`/`nb²` (extra + superscript runs) is ONE cell: encode the plain `w`/`nb` token
-and absorb the superscript runs into the over total. If you read ≠6 cells in a
-block, you have misread it — re-crop and recount before best-guessing. If the
+and absorb the superscript runs into the over total. If you read a different number
+of cells in a block, you have misread it — re-crop and recount before
+best-guessing. If the
 card GENUINELY breaks the rule (rare umpire call), ask the user; once they
 adjudicate, record it in `meta.ball_count_exceptions`
 (`[{innings, skin, balls, reason}]`) so validator [E] holds that skin to the
@@ -72,7 +85,8 @@ schema, then WRITE a JSON file of the same shape to the OUTPUT path you were giv
 ```
 { "date","team":"<our team>","opponent",
   "meta":{"time","season","arena":"<arena as printed>","league" (e.g. "Mens E"),
-          "umpire","court","venue":null,"source_image":"scorecards/<image filename>"},
+          "umpire","court","venue":null,"source_image":"scorecards/<image filename>",
+          "rules":{<the team's rules block from team.yaml, every key written out>}},
   "result":{"outcome"(win/loss/tie for us — skins first, then runs),
             "team_total","team_skins_won","team_skins":[4],
             "opponent_total","opponent_skins_won","opponent_skins":[4],

@@ -11,7 +11,16 @@
   "venue": null,
   "source_image": "scorecards/example.jpeg",
   "court": null,
-  "notes": "EXAMPLE of the exact schema (a real game with names replaced). innings[0] = the team that batted first. 'team' = our team exactly as printed; result fields are from our side. Optional: meta.ball_count_exceptions [{innings, skin, balls, reason}] for a skin the card itself shows with a non-standard ball count (ask the user first)."
+  "rules": {
+   "wicket_runs": -5,
+   "extra_runs": 2,
+   "balls_per_over": 6,
+   "extra_ball_last_over": true,
+   "skins": 4,
+   "overs_per_pair": 4,
+   "players_per_side": 8
+  },
+  "notes": "EXAMPLE of the exact schema (a real game with names replaced). innings[0] = the team that batted first. 'team' = our team exactly as printed; result fields are from our side. meta.rules = the team.yaml rules this game was scored under (copied in when the game is added; never edited later). Optional: meta.ball_count_exceptions [{innings, skin, balls, reason}] for a skin the card itself shows with a non-standard ball count (ask the user first)."
  },
  "result": {
   "outcome": "loss",
