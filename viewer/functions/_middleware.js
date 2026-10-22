@@ -19,16 +19,37 @@ const WRONG_PIN_DELAY_MS = 1000;
 // friction, not a hard guarantee — see docs/SETUP.md for the stronger email gate.
 const MAX_TRIES = 5;
 const WINDOW_MS = 15 * 60 * 1000;
-const tries = new Map();     // address -> {n, since}
+const MAX_TRACKED = 5000;
+const tries = new Map();     // network -> {n, since}; insertion order = oldest first
+
+// IPv6 users get a whole /64 each, so count per /64 rather than per address.
+function networkOf(ip) {
+  if (!ip.includes(":")) return ip;
+  const [head, tail] = ip.split("::");
+  const h = head ? head.split(":") : [];
+  const t = tail === undefined ? [] : (tail ? tail.split(":") : []);
+  const groups = tail === undefined ? h : [...h, ...Array(Math.max(0, 8 - h.length - t.length)).fill("0"), ...t];
+  return groups.slice(0, 4).map((g) => (parseInt(g, 16) || 0).toString(16)).join(":") + "::/64";
+}
 
 function allowTry(ip) {
   const t = Date.now();
-  if (tries.size > 5000) tries.clear();                     // keep memory bounded
-  const e = tries.get(ip);
-  if (!e || t - e.since > WINDOW_MS) { tries.set(ip, { n: 1, since: t }); return true; }
+  const key = networkOf(ip);
+  const e = tries.get(key);
+  if (!e || t - e.since > WINDOW_MS) {
+    tries.delete(key);
+    tries.set(key, { n: 1, since: t });
+    while (tries.size > MAX_TRACKED) tries.delete(tries.keys().next().value);   // drop the oldest
+    return true;
+  }
   e.n += 1;
   return e.n <= MAX_TRIES;
 }
+
+// Files the phone fetches to install the app (often without cookies). They are the
+// engine's generic manifest and icons — no team data — so they skip the gate.
+const PUBLIC_EXACT = new Set(["/manifest.webmanifest", "/favicon.ico"]);
+const isPublic = (path) => PUBLIC_EXACT.has(path) || /^\/icons\/[\w.-]+\.png$/.test(path);
 const enc = new TextEncoder();
 
 async function hmacHex(secret, message) {
@@ -114,6 +135,7 @@ async function onRequest(context) {
   }
   const key = `${env.PIN_SECRET}:${env.TEAM_PIN}`;
   const url = new URL(request.url);
+  if (request.method === "GET" && isPublic(url.pathname)) return context.next();
 
   if (url.pathname === "/__pin" && request.method === "POST") {
     const ip = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -125,7 +147,7 @@ async function onRequest(context) {
     let pin = "";
     try { pin = String((await request.formData()).get("pin") || "").trim(); } catch { /* bad body */ }
     if (pin && sameString(pin, env.TEAM_PIN)) {
-      tries.delete(ip);
+      tries.delete(networkOf(ip));
       const value = await sign(key, Math.floor(Date.now() / 1000) + MAX_AGE);
       return new Response(null, { status: 302, headers: {
         Location: "/", "Cache-Control": "no-store",

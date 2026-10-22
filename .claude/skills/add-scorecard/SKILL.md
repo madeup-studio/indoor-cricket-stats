@@ -12,6 +12,8 @@ One Spawtz scorecard photo in → a verified game file, updated stats, the coach
 letter and a published app out. **Accuracy is the whole point: every number must
 reconcile.** You read the photo and write the letter; the scripts do all the maths.
 The user is usually on a phone: keep questions few, short and in plain words.
+With several teams in `Teams/`, prefix every command except `publish.py` with
+`TEAM=<folder>` (the team's folder name).
 
 ## 0. Before you start
 

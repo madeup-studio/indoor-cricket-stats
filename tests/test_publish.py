@@ -61,3 +61,20 @@ def test_publish_without_remote_does_not_push(team_repo):
     import publish
     r = publish.publish("Game z", push=True)
     assert r["committed"] is True and r["pushed"] is False and r["note"] == "no remote"
+
+
+def test_publish_commits_the_deploy_workflow(team_repo, tmp_path):
+    """/setup rewrites the workflow's project name; the first publish must ship it."""
+    import publish
+    wf = team_repo / ".github" / "workflows"
+    wf.mkdir(parents=True)
+    shutil.copy(os.path.join(REPO, "template", ".github", "workflows", "deploy.yml"), wf / "deploy.yml")
+    git(team_repo, "add", "-A"); git(team_repo, "commit", "-q", "-m", "template")
+    import setup as S
+    S.write_workflow("our-team", str(team_repo))
+    remote = tmp_path / "remote.git"
+    git(tmp_path, "init", "-q", "--bare", "-b", "main", str(remote))
+    git(team_repo, "remote", "add", "origin", str(remote))
+    assert publish.publish("Set up the team app", push=True)["pushed"]
+    pushed = git(remote, "show", "main:.github/workflows/deploy.yml")
+    assert "__PROJECT_NAME__" not in pushed and "--project-name=our-team" in pushed

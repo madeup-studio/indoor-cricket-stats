@@ -15,7 +15,8 @@ Coach tab shows the newest one, and each game's page shows the letter written af
 
 The team is the folder under `Teams/` (see `$ENGINE/scripts/paths.py`); its `team.yaml` has
 the team's name as printed on the scorecards, its arena and league, and the coach
-settings. Call the team by that name.
+settings. Call the team by that name. With several teams in `Teams/`, prefix every
+command with `TEAM=<folder>` (the team's folder name).
 
 ## Settings (`team.yaml` → `coach`)
 
@@ -54,6 +55,7 @@ disclaimer themselves — don't write it.
 
    ```python
    import os, sys; sys.path.insert(0, "engine/scripts" if os.path.isdir("engine") else "scripts")
+   os.environ.setdefault("TEAM", "<TEAM>")                     # the team's folder under Teams/
    import report_data as RD, coach
    seasons, allm, R = RD.load_all()
    i = coach.game_keys(allm).index("<KEY>")

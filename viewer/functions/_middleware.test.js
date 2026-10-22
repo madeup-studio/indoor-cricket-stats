@@ -115,3 +115,36 @@ test("parallel guessing from one address is throttled; other addresses are not",
   assert.equal((await guess("203.0.113.9", "123456")).status, 429);       // even the right code waits
   assert.equal((await guess("198.51.100.4", "123456")).status, 302);      // a teammate elsewhere is fine
 });
+
+test("the install files (manifest, icons) load without the code; nothing else does", async () => {
+  for (const path of ["/manifest.webmanifest", "/icons/icon-192.png", "/icons/apple-touch-icon.png"]) {
+    const r = await onRequest(ctx(ENV, { path }));
+    assert.equal(await r.text(), "page", path);
+  }
+  for (const path of ["/icons/../data/our-team.json", "/data/our-team.json", "/manifest.webmanifest.json", "/iconsx/a.png"]) {
+    const r = await onRequest(ctx(ENV, { path }));
+    assert.ok((await r.text()).includes('name="pin"'), path);
+  }
+});
+
+test("IPv6 guesses are counted per /64 network", async () => {
+  const guess = (ip) => {
+    const c = ctx(ENV, { path: "/__pin", method: "POST", form: { pin: "000001" } });
+    c.request = new Request(c.request, { headers: new Headers([...c.request.headers, ["CF-Connecting-IP", ip]]) });
+    return onRequest(c);
+  };
+  const codes = await Promise.all(Array.from({ length: 6 }, (_, i) => guess(`2001:db8:aa:bb::${i + 1}`)));
+  assert.ok(codes.some((r) => r.status === 429), codes.map((r) => r.status).join(","));
+  assert.equal((await guess("2001:db8:aa:cc::1")).status, 401);     // another network is not blocked
+});
+
+test("one /64 written with different zero-compression shares the budget", async () => {
+  const guess = (ip) => {
+    const c = ctx(ENV, { path: "/__pin", method: "POST", form: { pin: "000002" } });
+    c.request = new Request(c.request, { headers: new Headers([...c.request.headers, ["CF-Connecting-IP", ip]]) });
+    return onRequest(c);
+  };
+  const ips = ["2001:db8::5", "2001:db8:0:0:1::", "2001:db8::1:2:3", "2001:DB8:0:0::9", "2001:db8::7", "2001:db8:0:0:ffff::1"];
+  const codes = await Promise.all(ips.map(guess));
+  assert.ok(codes.some((r) => r.status === 429), codes.map((r) => r.status).join(","));
+});

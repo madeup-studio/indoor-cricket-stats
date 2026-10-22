@@ -4,7 +4,8 @@
   python engine/scripts/publish.py "Game 2026-10-07 vs Opponents" [--no-push]
 
 1. builds site/ from every team under Teams/ (build_site.py),
-2. commits Teams/ and site/ with the message (no commit when nothing changed),
+2. commits Teams/, site/ and .github/workflows/ with the message (no commit when
+   nothing changed),
 3. pushes the commit to origin's main branch (`git push origin HEAD:main`, which
    also works from a Claude Code cloud session's own branch). GitHub Actions then
    deploys site/ to Cloudflare Pages, usually within a minute.
@@ -36,7 +37,11 @@ def publish(message, push=True, branch="main"):
         raise SystemExit("!! nothing to publish here: this repo only has the example team. "
                          "Publish from your team's repo.")
     build_site.build(os.path.join(repo, "site"))
-    _git(repo, "add", "--", "Teams", "site")
+    # the team's data, the built app, and the deploy workflow (/setup writes the
+    # Cloudflare project name into it)
+    paths_to_add = ["Teams", "site"] + [p for p in (".github/workflows",)
+                                        if os.path.isdir(os.path.join(repo, p))]
+    _git(repo, "add", "--", *paths_to_add)
     committed = _git(repo, "diff", "--cached", "--quiet", check=False).returncode != 0
     if committed:
         _git(repo, "commit", "-q", "-m", message)

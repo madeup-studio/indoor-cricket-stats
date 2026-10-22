@@ -16,7 +16,7 @@ def norm_ball(b):
     """Canonical ball token: ints untouched, dismissals upper, extras lower."""
     if isinstance(b, int):
         return b
-    return b.upper() if len(b) == 1 else b.lower()
+    return b.upper() if b.upper() in DISM else b.lower()   # "w" is a wide, not a dismissal
 
 
 def load_frontmatter(path):

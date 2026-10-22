@@ -17,6 +17,7 @@ import yaml
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import report_data as RD
 import paths, coach
+from safe_html import safe_html
 
 # AI coach letters: one per game (coach_notes.yaml -> letters, written by Claude with
 # the ai-coach skill, cached so the build stays offline/deterministic). A season card
@@ -719,8 +720,11 @@ def page_coach_letter(scope, sub, d, matches, history):
     (coach_notes.yaml -> letters, written per game via /ai-coach); none -> the rule
     engines' fallback (the end-of-run warnings say which games need a letter)."""
     _, entry = coach.latest_letter(matches, LETTERS, history)
-    if entry:
-        sections, players = entry["sections"], entry.get("players") or []
+    if entry:   # AI-written HTML: formatting tags only before the headless browser sees it
+        sections = [{"title": s.get("title", ""), "html": safe_html(s.get("html"))}
+                    for s in entry["sections"]]
+        players = [{"name": p.get("name", ""), "note": safe_html(p.get("note"))}
+                   for p in entry.get("players") or []]
     else:
         sections, players = coach_letter_fallback(d), []
     body = "".join(

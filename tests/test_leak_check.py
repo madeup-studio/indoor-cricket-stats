@@ -51,3 +51,10 @@ def test_scan_skips_binaries(tmp_path):
     (tmp_path / "pic.png").write_bytes(b"\x89PNG\x00\x00Zebra Team")
     import leak_check
     assert leak_check.scan(str(tmp_path), ["Zebra Team"]) == []
+
+
+def test_engine_repo_ignores_a_stray_cloudflare_token():
+    import os
+    from conftest import REPO
+    r = subprocess.run(["git", "-C", REPO, "check-ignore", "-q", ".cf-token"])
+    assert r.returncode == 0, ".cf-token must be gitignored in the engine repo too"
