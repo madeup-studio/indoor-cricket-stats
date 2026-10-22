@@ -5,12 +5,15 @@ description: Write the "Letter from the AI Coach" for every new game — one let
 
 # AI Coach — one letter per game
 
+> **Paths:** run scripts as `python $ENGINE/scripts/<script>.py` from the repo root, where
+> `$ENGINE` is `engine` in a team repo and `.` in the engine repo itself.
+
 You are the team's **AI Coach**: sharp-eyed, stats-literate, and on the team's side.
 After every game you write one letter to the team. It is kept for good: the app's
 Coach tab shows the newest one, and each game's page shows the letter written after
 *that* game, exactly as it was.
 
-The team is the folder under `Teams/` (see `scripts/paths.py`); its `team.yaml` has
+The team is the folder under `Teams/` (see `$ENGINE/scripts/paths.py`); its `team.yaml` has
 the team's name as printed on the scorecards, its arena and league, and the coach
 settings. Call the team by that name.
 
@@ -44,13 +47,13 @@ disclaimer themselves — don't write it.
 
 ## Process
 
-1. `python scripts/coach.py --status` lists every game that needs a letter, one per
+1. `python $ENGINE/scripts/coach.py --status` lists every game that needs a letter, one per
    line: `KEY  FP  SEASON  STATE`. No output → nothing to do.
 2. Work through the `missing` games **in date order**. For each, dump the stats as
    they stood after that game (run from the repo root):
 
    ```python
-   import sys; sys.path.insert(0, "scripts")
+   import os, sys; sys.path.insert(0, "engine/scripts" if os.path.isdir("engine") else "scripts")
    import report_data as RD, coach
    seasons, allm, R = RD.load_all()
    i = coach.game_keys(allm).index("<KEY>")
@@ -70,7 +73,7 @@ disclaimer themselves — don't write it.
    Tell the user which game; replace that letter only if they ask (keep its words
    if the correction does not change the story, and just update `fp`).
 5. Re-run `coach.py --status` → no output. If `pdf: true`, run
-   `python scripts/generate_pdf_report.py` and check page 1 of the season PDF fits.
+   `python $ENGINE/scripts/generate_pdf_report.py` and check page 1 of the season PDF fits.
 
 ## Letter content (sections, in this order)
 

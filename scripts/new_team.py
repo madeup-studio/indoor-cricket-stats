@@ -16,9 +16,14 @@ printed on the scorecards.
 import argparse, datetime, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rules
+_had_optional = "ACS_TEAM_OPTIONAL" in os.environ
+os.environ.setdefault("ACS_TEAM_OPTIONAL", "1")    # no team yet is fine here
+import paths
+if not _had_optional:
+    del os.environ["ACS_TEAM_OPTIONAL"]
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEAMS_DIR = os.environ.get("TEAMS_DIR") or os.path.join(ROOT, "Teams")
+ROOT = paths.ROOT                  # the repo holding Teams/ (team repo or engine repo)
+TEAMS_DIR = paths.TEAMS_DIR
 TONES = ("banter", "encouraging", "serious")
 GATES = ("pin", "email", "none")
 
@@ -163,9 +168,11 @@ def main():
         team_dir = create_team(a.name, folder, a.arena, a.badge or default_badge(a.name),
                                a.league, a.preset, a.tone, a.gate)
     elif a.season_start:
-        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        import paths      # resolves the existing team (TEAM env var or the only team)
-        team_dir = paths.TEAM_DIR
+        team_dir = paths.TEAM_DIR      # the TEAM env var or the only team
+        if not team_dir:
+            teams = paths.team_folders()
+            sys.exit("No team set up yet: give the team name too." if not teams else
+                     f"Several teams ({', '.join(teams)}): pick one with the TEAM env var.")
     else:
         ap.error("give a team name (first run) and/or --season-start YYYY-MM-DD")
     if a.season_start:

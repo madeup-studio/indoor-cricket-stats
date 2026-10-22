@@ -18,7 +18,7 @@ balls", read the team's value. Copy the team's whole `rules` block into the game
 ## Step 1 — enlarge the grid (the photos are low-res)
 Crop horizontal bands and upscale with the repo tool, into a scratch dir:
 ```
-python scripts/crop_scorecard.py "<IMAGE>" "<SCRATCH>" \
+python $ENGINE/scripts/crop_scorecard.py "<IMAGE>" "<SCRATCH>" \
   --band d1:0.205:0.262 --band d2:0.258:0.312 --band d3:0.302:0.360 --band d4:0.353:0.410 \
   --band o1:0.447:0.505 --band o2:0.503:0.560 --band o3:0.558:0.616 --band o4:0.614:0.672
 ```
@@ -80,7 +80,7 @@ innings 1 = the team whose "Batting Team" block appears first (earlier innings s
 time). Record both innings' batting.
 
 ## Output — write JSON to the given path
-First Read the template `scripts/templates/game-template.json` for the EXACT
+First Read the template `$ENGINE/scripts/templates/game-template.json` for the EXACT
 schema, then WRITE a JSON file of the same shape to the OUTPUT path you were given:
 ```
 { "date","team":"<our team>","opponent",

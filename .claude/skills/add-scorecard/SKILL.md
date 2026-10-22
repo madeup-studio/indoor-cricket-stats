@@ -5,6 +5,9 @@ description: Turn a new action-cricket scorecard photo into a verified game reco
 
 # Add a scorecard
 
+> **Paths:** run scripts as `python $ENGINE/scripts/<script>.py` from the repo root, where
+> `$ENGINE` is `engine` in a team repo and `.` in the engine repo itself.
+
 One Spawtz action-cricket scorecard photo in → a verified game file, updated stats,
 PDFs and a fresh coach letter out. **Accuracy is the whole point: every number must
 reconcile.** Claude reads the photo and writes the letter; the scripts do all the maths.
@@ -17,7 +20,7 @@ If no folder under `Teams/` has a `team.yaml`:
    user which one is theirs (it must be spelled exactly as printed).
 2. The card's `League:` line reads `<arena> - <season> - <league>`, e.g.
    `Example Arena - Spring 2026 - Mens E`.
-3. Run `python scripts/new_team.py "<team name as printed>" --arena "<arena>"`.
+3. Run `python $ENGINE/scripts/new_team.py "<team name as printed>" --arena "<arena>"`.
    Optional: `--badge ABC` (2–4 characters for the report logo); brand colours can be
    changed later in `team.yaml`.
 
@@ -28,13 +31,13 @@ If no folder under `Teams/` has a `team.yaml`:
   are that season (check `meta.season` in one of its `data/*.json`). If there is none,
   it's a new season: ask the user for the season's start date (the arena website
   lists it; if they don't know, use this game's date) and run
-  `python scripts/new_team.py --season-start <YYYY-MM-DD>`.
+  `python $ENGINE/scripts/new_team.py --season-start <YYYY-MM-DD>`.
 - Skip it if that date + opponent is already in `data/`.
 - Move the photo into `<season>/scorecards/` (keep its filename).
 
 ## 2. Transcribe
 
-Follow `scripts/TRANSCRIBE.md` exactly: enlarge the grid with `crop_scorecard.py`,
+Follow `$ENGINE/scripts/TRANSCRIBE.md` exactly: enlarge the grid with `crop_scorecard.py`,
 header, bottom summary tables first (they're authoritative), then both innings
 ball-by-ball with the delivery order (`over_seq`). Write
 `<season>/data/<YYYY-MM-DD>.json` (add `-<opponent-slug>` when there are two games
@@ -44,8 +47,8 @@ from our side; `meta.arena` + `meta.league` come from the `League:` line.
 ## 3. Build and verify
 
 ```bash
-python scripts/build_scorecards.py
-python scripts/validate_ballbyball.py      # must end with "ALL RECONCILE"
+python $ENGINE/scripts/build_scorecards.py
+python $ENGINE/scripts/validate_ballbyball.py      # must end with "ALL RECONCILE"
 ```
 
 Fix any failure by re-reading the card (re-crop that band larger), never by bending
@@ -57,11 +60,11 @@ card itself breaks the 6-balls-an-over law, ask the user, then record it in
 ## 4. Player names
 
 ```bash
-python scripts/roster.py --check
+python $ENGINE/scripts/roster.py --check
 ```
 
 - If `players.yaml` has no entries yet (first game), run
-  `python scripts/roster.py --refresh` to create them.
+  `python $ENGINE/scripts/roster.py --refresh` to create them.
 - Otherwise add each new name to `players.yaml` by hand (this keeps the comments):
   `- as: "<exactly as printed>"  # <team>` with `name: "<display name>"`.
 - **Our players:** ask the user whether a new spelling is an existing player (add it
@@ -74,8 +77,8 @@ python scripts/roster.py --check
 ## 5. Reports and the coach letter
 
 ```bash
-python scripts/generate_stats.py
-python scripts/generate_pdf_report.py
+python $ENGINE/scripts/generate_stats.py
+python $ENGINE/scripts/generate_pdf_report.py
 ```
 
 If the PDF step warns about a stale coach letter, use the **ai-coach** skill to write
