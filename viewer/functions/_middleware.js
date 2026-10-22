@@ -14,6 +14,21 @@
 const COOKIE = "ac_auth";
 const MAX_AGE = 15552000;            // 180 days
 const WRONG_PIN_DELAY_MS = 1000;
+// Code attempts per address: at most MAX_TRIES per window, counted when a request
+// starts (so parallel guesses count too). Kept in this worker's memory: it adds
+// friction, not a hard guarantee — see docs/SETUP.md for the stronger email gate.
+const MAX_TRIES = 5;
+const WINDOW_MS = 15 * 60 * 1000;
+const tries = new Map();     // address -> {n, since}
+
+function allowTry(ip) {
+  const t = Date.now();
+  if (tries.size > 5000) tries.clear();                     // keep memory bounded
+  const e = tries.get(ip);
+  if (!e || t - e.since > WINDOW_MS) { tries.set(ip, { n: 1, since: t }); return true; }
+  e.n += 1;
+  return e.n <= MAX_TRIES;
+}
 const enc = new TextEncoder();
 
 async function hmacHex(secret, message) {
@@ -101,9 +116,16 @@ async function onRequest(context) {
   const url = new URL(request.url);
 
   if (url.pathname === "/__pin" && request.method === "POST") {
+    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+    if (!allowTry(ip)) {
+      return new Response("Too many tries. Wait 15 minutes, then try again.", { status: 429,
+        headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store",
+          "Retry-After": String(WINDOW_MS / 1000) } });
+    }
     let pin = "";
     try { pin = String((await request.formData()).get("pin") || "").trim(); } catch { /* bad body */ }
     if (pin && sameString(pin, env.TEAM_PIN)) {
+      tries.delete(ip);
       const value = await sign(key, Math.floor(Date.now() / 1000) + MAX_AGE);
       return new Response(null, { status: 302, headers: {
         Location: "/", "Cache-Control": "no-store",

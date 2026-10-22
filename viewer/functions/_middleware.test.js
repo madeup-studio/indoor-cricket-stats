@@ -100,3 +100,18 @@ test("sign/verify round trip", async () => {
   assert.equal(await verify("s", v), true);
   assert.equal(await verify("t", v), false);
 });
+
+test("parallel guessing from one address is throttled; other addresses are not", async () => {
+  const guess = (ip, pin) => {
+    const c = ctx(ENV, { path: "/__pin", method: "POST", form: { pin } });
+    c.request = new Request(c.request, { headers: new Headers([...c.request.headers, ["CF-Connecting-IP", ip]]) });
+    return onRequest(c);
+  };
+  const t0 = Date.now();
+  const res = await Promise.all(Array.from({ length: 12 }, (_, i) => guess("203.0.113.9", String(100000 + i))));
+  const codes = res.map((r) => r.status);
+  assert.ok(codes.filter((s) => s === 429).length >= 7, codes.join(","));
+  assert.ok(Date.now() - t0 < 2500, "throttled requests answer at once");
+  assert.equal((await guess("203.0.113.9", "123456")).status, 429);       // even the right code waits
+  assert.equal((await guess("198.51.100.4", "123456")).status, 302);      // a teammate elsewhere is fine
+});
