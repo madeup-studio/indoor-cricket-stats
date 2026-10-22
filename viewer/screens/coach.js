@@ -1,18 +1,19 @@
 // The coach's letter: the Coach tab (newest letter in the scope) and the shared
 // letter component the game page uses.
 import { screens, h, link, fmtDate } from "../app.js";
+import { safeHtml } from "../sanitize.js";
 
 /** One letter as a paper sheet: its sections, then a note to each player who played.
  *  `players` is the team's player map (name -> {slug}) so notes link to player pages. */
 export function renderLetter(letter, players) {
   const sections = (letter.sections || []).map((s) =>
-    // sections[].html is written by the ai-coach skill from the team's own verified
-    // data and committed by the team admin — trusted, so it is inserted as-is.
-    h("section", { class: "letter-sec" }, h("h3", null, s.title), h("div", { html: s.html })));
+    // sections[].html is written by the ai-coach skill from the team's data and notes;
+    // it is passed through the formatting-only allowlist before it reaches the page.
+    h("section", { class: "letter-sec" }, h("h3", null, s.title), h("div", { html: safeHtml(s.html) })));
   const notes = (letter.players || []).map((p) => {
     const who = players && players[p.name];
     const name = who ? h("a", { href: link("player", who.slug) }, p.name) : h("span", null, p.name);
-    return h("li", null, h("strong", null, name), h("span", { html: p.note }));  // trusted, as above
+    return h("li", null, h("strong", null, name), h("span", { html: safeHtml(p.note) }));
   });
   return h("article", { class: "letter" },
     sections,

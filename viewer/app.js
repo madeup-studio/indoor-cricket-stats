@@ -19,8 +19,12 @@ export function h(tag, attrs, ...children) {
   for (const [k, v] of Object.entries(attrs || {})) {
     if (v === null || v === undefined || v === false) continue;
     if (k === "class" || k === "className") el.setAttribute("class", v);
-    else if (k === "html") el.innerHTML = v;            // only for trusted, engine-built HTML
-    else if (k === "style" && typeof v === "object") Object.assign(el.style, v);
+    else if (k === "html") el.innerHTML = v;   // callers pass safeHtml() output only
+    else if (k === "style" && typeof v === "object") {
+      for (const [p, val] of Object.entries(v)) {
+        if (p.startsWith("--")) el.style.setProperty(p, String(val)); else el.style[p] = val;
+      }
+    }
     else if (k.startsWith("on") && typeof v === "function") el.addEventListener(k.slice(2), v);
     else el.setAttribute(k, v === true ? "" : String(v));
   }
