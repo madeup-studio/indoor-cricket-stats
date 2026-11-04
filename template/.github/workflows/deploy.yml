@@ -9,6 +9,9 @@ on:
 
 jobs:
   deploy:
+    # Skipped until /setup writes the project name over the placeholder, so a repo
+    # freshly made from the template shows no failed deploy before setup.
+    if: ${{ !startsWith('__PROJECT_NAME__', '__') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
