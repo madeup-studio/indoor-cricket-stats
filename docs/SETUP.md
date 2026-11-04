@@ -22,9 +22,12 @@ open a link and enter the team code.
 
 ## 1. Make your team's copy
 
-1. Open https://github.com/madeup-studio/indoor-cricket-stats-team (sign in if asked).
-2. Tap the green **Use this template** button at the top → **Create a new repository**.
-3. Name it (e.g. `our-team-stats`), choose **Private**, then **Create repository**.
+1. In a web browser (not the GitHub app, which hides the button), open
+   https://github.com/new?template_owner=madeup-studio&template_name=indoor-cricket-stats-team
+   and sign in if asked. (The same form is behind the green **Use this template**
+   button on https://github.com/madeup-studio/indoor-cricket-stats-team.)
+2. Under **Owner** pick your own account. Name it (e.g. `our-team-stats`), choose
+   **Private**, then **Create repository**.
 
 You now have your own copy. Nothing in it is shared with anyone.
 
