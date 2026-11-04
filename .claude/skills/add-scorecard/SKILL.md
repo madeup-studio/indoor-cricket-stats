@@ -110,7 +110,7 @@ Each ends with a publish: `python $ENGINE/scripts/publish.py "<what changed>"`.
 **Season over** ("we finished second"): write `Teams/<TEAM>/<season>/season.yaml` with
 `medal: silver` (1st gold, 2nd silver, 3rd bronze, league or playoff alike; anything
 else → no medal, only `finish:`) and optionally `finish: "<their words>"`. The medal
-shows in the season menu and the season's awards appear. Then publish.
+shows in the season menu, and the season's awards are computed (shown only if `show: awards` is on). Then publish.
 
 **Mark a game as a final** ("mark the game on 2026-11-20 as the final"): set
 `meta.stage` in that game's file (`playoff`, `semi-final` or `final`), re-run
