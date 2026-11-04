@@ -26,6 +26,8 @@ export const GLOSSARY = {
     text: () => "A pair's spell at the crease: four overs, one from each bowler pair. The side that scores more in a skin wins it." },
   big_hits: { title: "Big hits",
     text: () => "Shots worth 5 or 7 runs." },
+  awards: { title: "Season awards",
+    text: (r, n) => `Worked out from the season's rankings once the season is over: best average per 12 balls, best economy and best average contribution. A player needs at least ${(n && n.season) ?? 3} games to win one.` },
   ranked: { title: "Ranked",
     text: (r, n) => `Ranked players have played at least ${(n && n.season) ?? 3} games in a season, or ${(n && n.alltime) ?? 10} all-time. Players with fewer are listed below the line, unranked.` },
 };

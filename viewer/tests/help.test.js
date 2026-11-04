@@ -3,7 +3,7 @@ import { GLOSSARY, glossaryText } from "../help.js";
 
 test("glossary has the agreed keys, each with a title and a one-liner", () => {
   assert.deepEqual(Object.keys(GLOSSARY).sort(),
-    ["avg12", "big_hits", "c", "econ", "ranked", "rc", "rs", "skin", "sr", "wkts"]);
+    ["avg12", "awards", "big_hits", "c", "econ", "ranked", "rc", "rs", "skin", "sr", "wkts"]);
   for (const k of Object.keys(GLOSSARY)) {
     assert.ok(GLOSSARY[k].title, k);
     assert.ok(glossaryText(k, {}).length > 20, k);
@@ -19,4 +19,8 @@ test("wicket value comes from the team's rules", () => {
 
 test("ranked threshold uses the numbers it is given", () => {
   assert.match(glossaryText("ranked", {}, { season: 3, alltime: 10 }), /3 games.*10/);
+});
+
+test("awards entry names the games needed", () => {
+  assert.match(glossaryText("awards", {}, { season: 3, alltime: 10 }), /3 games/);
 });
