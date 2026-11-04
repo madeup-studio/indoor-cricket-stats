@@ -329,6 +329,19 @@ def build(matches, R, alltime=False, _nested=False):
                 min_balls=MIN_BALLS)
 
 
+def season_awards(d):
+    """Season awards from build()'s lists: the first `ranked` entry of each
+    (batting by avg12, bowling by econ, allround by avgc); None when nobody is ranked."""
+    def first(key, field):
+        for x in d[key]:
+            if x["ranked"]:
+                return {"name": x["name"], "value": x[field]}
+        return None
+    return {"batter": first("batting", "avg12"),
+            "bowler": first("bowling", "econ"),
+            "player": first("allround", "avgc")}
+
+
 def load_scoped():
     """Return (current_matches, alltime_matches, current_label)."""
     R = roster.load()
