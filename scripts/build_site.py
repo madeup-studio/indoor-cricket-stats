@@ -22,6 +22,7 @@ _had_optional = "ACS_TEAM_OPTIONAL" in os.environ
 os.environ.setdefault("ACS_TEAM_OPTIONAL", "1")     # import paths without picking a team
 import paths, rules, coach, roster, stats_core
 import report_data as RD
+import season_meta, team_settings
 if not _had_optional:
     del os.environ["ACS_TEAM_OPTIONAL"]
 
@@ -193,6 +194,13 @@ def _photo(team_dir, team_slug, name):
     return None
 
 
+def _player_entry(team_dir, tslug, n, awards):
+    e = {"slug": slug(n), "photo": _photo(team_dir, tslug, n)}
+    if awards and any(awards.values()):
+        e["awards"] = dict(awards)
+    return e
+
+
 def team_payload(team_dir, R):
     """Everything the viewer shows for one team, built only from `team_dir`."""
     cfg = _load_cfg(team_dir)
@@ -214,7 +222,7 @@ def team_payload(team_dir, R):
         extras, ro = _bowling_detail(m, rz)
         letter = letters.get(keys[i])
         games.append(dict(
-            key=keys[i], season=folder_of[i], date=g["date"], opp=g["opp"],
+            key=keys[i], season=folder_of[i], stage=m.get("stage"), date=g["date"], opp=g["opp"],
             outcome=g["outcome"], total=g["total"], against=g["against"],
             skins=g["skins"], oskins=g["oskins"], skin_scores=g["skin_scores"],
             pom=g["pom"], pom_ours=g["pom_ours"], top_c=g["top_c"],
@@ -225,12 +233,21 @@ def team_payload(team_dir, R):
                        "theirs": _summary_rows(m["opponent_summary"], rz)}))
 
     season_out, start = [], 0
-    for folder, label, ms in seasons:
+    award_counts = defaultdict(lambda: {"player": 0, "batter": 0, "bowler": 0})
+    for i, (folder, label, ms) in enumerate(seasons):
         sg = games[start:start + len(ms)]
         start += len(ms)
         d = RD.build(ms, R)
+        meta = season_meta.load(os.path.join(team_dir, folder))
+        finished = season_meta.is_finished(i, len(seasons), meta)
+        awards = RD.season_awards(d) if finished else None
+        for kind, a in (awards or {}).items():
+            if a:
+                award_counts[a["name"]][kind] += 1
         season_out.append(dict(key=folder, label=label, games=[g["key"] for g in sg],
-                               stats=jsonable(d), records=jsonable(derive_records(d, sg))))
+                               stats=jsonable(d), records=jsonable(derive_records(d, sg)),
+                               medal=meta["medal"], finish=meta["finish"],
+                               finished=finished, awards=awards))
 
     names = [a["name"] for a in alltime["allround"]] if alltime else []
     return {
@@ -238,12 +255,13 @@ def team_payload(team_dir, R):
                      arena=cfg.get("arena") or "", league=cfg.get("league") or "",
                      colours=cfg.get("colours") or {},
                      coach={"enabled": bool(coach_cfg["enabled"]), "tone": coach_cfg["tone"]},
-                     rules=rules.load_rules(cfg), gate=cfg.get("gate") or "pin"),
+                     rules=rules.load_rules(cfg), gate=cfg.get("gate") or "pin",
+                     show=team_settings.merge_show(cfg)),
         "seasons": season_out,
         "alltime": dict(stats=jsonable(alltime) if alltime else None,
                         records=jsonable(derive_records(alltime, games)) if alltime else None),
         "games": jsonable(games),
-        "players": {n: {"slug": slug(n), "photo": _photo(team_dir, tslug, n)} for n in names},
+        "players": {n: _player_entry(team_dir, tslug, n, award_counts.get(n)) for n in names},
         # data as of the newest game: keeps rebuilds byte-identical when nothing changed
         "generated": games[-1]["date"] if games else "",
     }

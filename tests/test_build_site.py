@@ -113,3 +113,50 @@ def test_viewer_tests_not_copied(tmp_path):
     B.build(str(tmp_path))
     assert not list(tmp_path.rglob("*.test.js")) and not (tmp_path / "tests").exists()
     assert not (tmp_path / "package.json").exists()      # dev-only (node --test)
+
+
+def test_payload_show_defaults_and_override(tmp_team):
+    import build_site as B, team_settings as TS, yaml
+    team_dir = tmp_team / "example-team"
+    assert B.team_payload(str(team_dir), None)["team"]["show"] == TS.SHOW_DEFAULTS
+    cfg = yaml.safe_load((team_dir / "team.yaml").read_text(encoding="utf-8"))
+    cfg["show"] = {"awards": True, "records": {"low_total": False}}
+    (team_dir / "team.yaml").write_text(yaml.safe_dump(cfg), encoding="utf-8")
+    show = B.team_payload(str(team_dir), None)["team"]["show"]
+    assert show["awards"] is True and show["records"]["low_total"] is False and show["streaks"] is True
+
+
+def test_payload_seasons_medal_finished_awards(tmp_team_two_seasons):
+    import build_site as B
+    p = B.team_payload(tmp_team_two_seasons, None)
+    s0, s1 = p["seasons"]
+    assert (s0["key"], s0["medal"], s0["finish"], s0["finished"]) == ("2026-09-01", "silver", "2nd in Mens E", True)
+    assert (s1["key"], s1["label"], s1["medal"], s1["finished"], s1["awards"]) == ("2027-01-12", "Summer 2027", None, False, None)
+    assert set(s0["awards"]) == {"batter", "bowler", "player"} and s0["awards"]["player"]["name"].startswith("Our P")
+    winners = {a["name"] for a in s0["awards"].values()}
+    for n in winners:
+        assert sum(p["players"][n]["awards"].values()) >= 1
+    assert all("awards" not in v for k, v in p["players"].items() if k not in winners)
+
+
+def test_payload_current_season_without_medal_is_not_finished(tmp_team_three_games):
+    import build_site as B
+    s = B.team_payload(tmp_team_three_games, None)["seasons"][0]
+    assert s["finished"] is False and s["awards"] is None and s["medal"] is None
+
+
+def test_payload_game_stage(tmp_path):
+    import build_site as B
+    from conftest import clone_game, _copy_example, _run_script
+    teams = _copy_example(tmp_path)
+    clone_game(teams, "2026-10-14", stage="final")
+    assert _run_script("build_scorecards.py", env={"TEAMS_DIR": str(teams)}).returncode == 0
+    p = B.team_payload(str(teams / "example-team"), None)
+    assert [g["stage"] for g in p["games"]] == [None, "final"]
+
+
+def test_bad_medal_fails_the_build(tmp_team):
+    import build_site as B, pytest
+    (tmp_team / "example-team" / "2026-09-01" / "season.yaml").write_text("medal: Silver\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="season.yaml"):
+        B.team_payload(str(tmp_team / "example-team"), None)
