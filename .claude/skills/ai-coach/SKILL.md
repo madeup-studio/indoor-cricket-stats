@@ -68,7 +68,8 @@ disclaimer themselves — don't write it.
    Use `d["team"]["games"][-1]` (skin scores, pom, top_c), the ladders with
    `d["prev_ranks"]` movement, `d["gamelog"]`, partnerships, hat-tricks and extras.
    Read the season's `context/` files dated on or before the game (standings,
-   notes, banter) and the game's own `data/<KEY>.json` (`meta.notes` may ask for a
+   notes, banter), the current and previous season's `season.yaml` (medal, finish)
+   when one exists, and the game's own `data/<KEY>.json` (`meta.notes` may ask for a
    mention or caution). Read the previous letter: its homework gets marked.
 3. Write the letter as a new entry under `letters:` with that key and fp. **Never
    edit an existing letter** — not its words, not to "improve" it.

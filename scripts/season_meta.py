@@ -17,7 +17,10 @@ def load(season_dir):
     medal = data.get("medal")
     if medal is not None and medal not in MEDALS:
         raise ValueError(f"{path}: medal must be one of gold/silver/bronze, got {medal!r}")
-    return {"medal": medal, "finish": data.get("finish"), "closed": bool(data.get("closed", False))}
+    finish = data.get("finish")
+    if finish is not None:
+        finish = str(finish)
+    return {"medal": medal, "finish": finish, "closed": bool(data.get("closed", False))}
 
 
 def is_finished(index, n_seasons, meta):

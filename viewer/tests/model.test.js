@@ -9,9 +9,12 @@ test("season labels carry the medal", () => {
   assert.equal(seasonOptionLabel({ label: "Spring 2026", medal: null }), "Spring 2026");
   assert.equal(seasonHeading({ label: "Spring 2026", medal: "silver", finish: "2nd in Mens E" }), "Spring 2026 · 🥈 2nd in Mens E");
   assert.equal(seasonHeading({ label: "Spring 2026" }), "Spring 2026");
+  assert.equal(seasonHeading({ label: "Spring 2026", medal: "silver", finish: "2nd" }, { medals: false }), "Spring 2026 · 2nd");
+  assert.equal(seasonHeading({ label: "Spring 2026", finish: "2nd" }), "Spring 2026 · 2nd");
 });
 test("stage labels", () => {
   assert.equal(stageLabel({ stage: "final" }), "Final");
+  assert.equal(stageLabel({ stage: "playoff" }), "Playoff");
   assert.equal(stageLabel({ stage: "semi-final" }), "Semi-final");
   assert.equal(stageLabel({ stage: "league" }), null);
   assert.equal(stageLabel({}), null);

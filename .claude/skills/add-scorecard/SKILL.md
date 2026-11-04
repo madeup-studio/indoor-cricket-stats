@@ -109,8 +109,9 @@ Each ends with a publish: `python $ENGINE/scripts/publish.py "<what changed>"`.
 
 **Season over** ("we finished second"): write `Teams/<TEAM>/<season>/season.yaml` with
 `medal: silver` (1st gold, 2nd silver, 3rd bronze, league or playoff alike; anything
-else → no medal, only `finish:`) and optionally `finish: "<their words>"`. The medal
-shows in the season menu, and the season's awards are computed (shown only if `show: awards` is on). Then publish.
+else → no medal: write `closed: true` too, so the season still counts as finished)
+and optionally `finish: "<their words>"`. The medal shows in the season menu, and the
+season's awards are computed (shown only if `show → awards` is on). Then publish.
 
 **Mark a game as a final** ("mark the game on 2026-11-20 as the final"): set
 `meta.stage` in that game's file (`playoff`, `semi-final` or `final`), re-run
@@ -121,7 +122,7 @@ edit `team.yaml` → `show:`. Keys: `awards` (off by default), `medals`, `stage_
 `streaks`, `partnerships`, `hattricks`, and `records:` with `high_total`, `low_total`,
 `biggest_win`, `heaviest_loss`, `best_skin`, `most_wkts_game`, `fewest_extras_game`,
 `best_contribution`, `most_runs_game`, `best_econ`, `most_runouts_created`. A switch only
-hides; the stats are still computed. Re-run `generate_stats.py`, then publish.
+hides; the stats are still computed. Then publish.
 
 **Add Sam as an admin**: three steps, tell the user each plainly.
 1. On GitHub: the repo → Settings → Collaborators → Add people → Sam. This is the real permission.

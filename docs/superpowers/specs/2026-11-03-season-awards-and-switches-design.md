@@ -122,7 +122,7 @@ popover (designer's call after review: the top bar has no room on a phone).
   (and `finish:` if the user gave detail) into the current season's `season.yaml`,
   then publishes. The `add-scorecard` skill gets a "Season over?" note under "Other
   requests": the mapping 1st → gold, 2nd → silver, 3rd → bronze, league or playoff
-  alike; anything else → no medal (record `finish:` only).
+  alike; anything else → no medal; record `finish:` and `closed: true` so the season still counts as finished.
 - The viewer shows the medal as an icon in front of the season's label in the season
   switcher (`fillScope`): `🥇`, `🥈`, `🥉`. The switcher is a native `<select>`, so
   the icon is part of the option text (designer's call; an SVG icon would need a

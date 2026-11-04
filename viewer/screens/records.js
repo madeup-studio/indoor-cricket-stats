@@ -1,5 +1,5 @@
-// Records: team and individual bests for the scope (all-time unless the viewer picked
-// a season). Each card opens the game the record was set in.
+// Records: team and individual bests for the scope (opens on the latest season like
+// every screen; the switcher offers all-time). Each card opens the game the record was set in.
 import { screens, h, fmt, signed, fmtDate, link, gameByKey, seasonOf } from "../app.js";
 import { helpIcon } from "../help.js";
 import { isShown, recordVisible, awardRows, awardsBySeason } from "../model.js";

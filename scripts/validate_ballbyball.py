@@ -91,11 +91,11 @@ def main():
                          key=os.path.basename):
             g = json.load(open(jf, encoding="utf-8"))
             games.append((jf, g))
-            key = (str(g["date"]), g["opponent"])
+            key = (str(g["date"]), g["opponent"].strip().casefold())
             first = seen.setdefault(key, os.path.basename(jf))
             if first != os.path.basename(jf):
                 print(f"!! duplicate game: {first} and {os.path.basename(jf)} "
-                      f"both record {key[0]} vs {key[1]}")
+                      f"both record {key[0]} vs {g['opponent']}")
                 total += 1; fails += 1
     for jf, g in games:
         R = rules_for(g)

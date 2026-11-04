@@ -8,8 +8,8 @@ export function seasonOptionLabel(season) {
   return icon ? `${icon} ${season.label}` : season.label;
 }
 
-export function seasonHeading(season) {
-  const icon = MEDAL_ICON[season.medal];
+export function seasonHeading(season, show) {
+  const icon = isShown(show, "medals") ? MEDAL_ICON[season.medal] : undefined;
   let s = season.label;
   if (icon) s += ` · ${icon}`;
   if (typeof season.finish === "string" && season.finish) s += icon ? ` ${season.finish}` : ` · ${season.finish}`;
@@ -53,7 +53,7 @@ export function awardsBySeason(data) {
   return (data.seasons || []).map((season) => ({ season, rows: awardRows(season) }))
     .filter((b) => b.rows.length > 0)
     .reverse()
-    .map((b) => ({ season: b.season, heading: seasonHeading(b.season), rows: b.rows }));
+    .map((b) => ({ season: b.season, heading: seasonHeading(b.season, data.team && data.team.show), rows: b.rows }));
 }
 
 export function awardTally(player) {
