@@ -72,3 +72,66 @@ def tmp_team_summaries_only(tmp_path):
         card.write_text(text.replace("  status: verified", "  status: summaries-only"),
                         encoding="utf-8")
     return str(teams / "example-team")
+
+
+def clone_game(teams_dir, date, *, season_folder="2026-09-01", season_label=None,
+               mirror=False, stage=None):
+    """Clone the example game into `<season_folder>/data/<date>.json` under the tmp
+    copy at `teams_dir`; returns the written path. `mirror=True` swaps the two sides
+    so Our Team wins 80-51. Does not run build_scorecards.py."""
+    import json, re
+    team_dir = teams_dir / "example-team"
+    src = team_dir / "2026-09-01" / "data" / "2026-10-07.json"
+    text = src.read_text(encoding="utf-8")
+    if mirror:
+        text = (text.replace("Our Team", "@@T@@").replace("Opponents", "Our Team")
+                .replace("@@T@@", "Opponents"))
+        text = re.sub(r"Our P(\d)", r"@@P\1@@", text)
+        text = re.sub(r"Opp P(\d)", r"Our P\1", text)
+        text = re.sub(r"@@P(\d)@@", r"Opp P\1", text)
+    g = json.loads(text)
+    g["date"] = date
+    if mirror:
+        g["team"], g["opponent"] = "Our Team", "Opponents"
+        res = g["result"]
+        for a, b in (("team_total", "opponent_total"), ("team_skins", "opponent_skins"),
+                     ("team_skins_won", "opponent_skins_won")):
+            res[a], res[b] = res[b], res[a]
+        res["outcome"] = "win"
+    if season_label is not None:
+        g["meta"]["season"] = season_label
+    if stage is not None:
+        g["meta"]["stage"] = stage
+    season = team_dir / season_folder
+    (season / "data").mkdir(parents=True, exist_ok=True)
+    (season / "scorecards").mkdir(parents=True, exist_ok=True)
+    out = season / "data" / f"{date}.json"
+    out.write_text(json.dumps(g, indent=1), encoding="utf-8")
+    return out
+
+
+@pytest.fixture
+def tmp_team_three_games(tmp_path):
+    """Example game + a straight clone (2026-10-14) + a mirrored win (2026-10-21), built;
+    returns the team dir."""
+    teams = _copy_example(tmp_path)
+    clone_game(teams, "2026-10-14")
+    clone_game(teams, "2026-10-21", mirror=True)
+    r = _run_script("build_scorecards.py", env={"TEAMS_DIR": str(teams)})
+    assert r.returncode == 0, r.stderr
+    return str(teams / "example-team")
+
+
+@pytest.fixture
+def tmp_team_two_seasons(tmp_path):
+    """The three games plus season.yaml on the first season and a second season
+    (Summer 2027) with one game, built; returns the team dir."""
+    teams = _copy_example(tmp_path)
+    clone_game(teams, "2026-10-14")
+    clone_game(teams, "2026-10-21", mirror=True)
+    (teams / "example-team" / "2026-09-01" / "season.yaml").write_text(
+        'medal: silver\nfinish: "2nd in Mens E"\n', encoding="utf-8")
+    clone_game(teams, "2027-01-14", season_folder="2027-01-12", season_label="Summer 2027")
+    r = _run_script("build_scorecards.py", env={"TEAMS_DIR": str(teams)})
+    assert r.returncode == 0, r.stderr
+    return str(teams / "example-team")
