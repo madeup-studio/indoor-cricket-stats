@@ -35,7 +35,10 @@ With several teams in `Teams/`, prefix every command except `publish.py` with
   are that season (`meta.season` in its `data/*.json`). None → a new season: ask for
   its start date (the arena's website lists it; else use this game's date) and run
   `python $ENGINE/scripts/new_team.py --season-start <YYYY-MM-DD>`.
-- Skip it if that date + opponent is already in `data/`.
+- If that date + opponent already exists in `data/`, say so and ask:
+  re-check the existing game against this photo, or leave it? Re-checking means
+  re-transcribing into the **same** file. Never write a second file (the validator
+  refuses duplicates).
 
 ## 2. Transcribe
 
@@ -45,6 +48,9 @@ ball-by-ball with the delivery order (`over_seq`). Write
 `<season>/data/<YYYY-MM-DD>.json` (add `-<opponent-slug>` when there are two games
 that day). `team` is our name exactly as in `team.yaml`; the `result` fields are
 from our side; `meta.arena` + `meta.league` come from the `League:` line.
+If the card's league line or the user says playoff / semi-final / final, set
+`meta.stage` to `playoff`, `semi-final` or `final`; otherwise leave it out. Never
+ask unprompted.
 
 ## 3. Build and verify
 
@@ -96,6 +102,36 @@ If `team.yaml` → `coach.enabled` is not false, use the **ai-coach** skill:
 `python $ENGINE/scripts/coach.py --status` lists the new game; write its letter.
 Only if `team.yaml` → `pdf` is true: `python $ENGINE/scripts/generate_pdf_report.py`
 (no `!!` warnings).
+
+## Other requests
+
+Each ends with a publish: `python $ENGINE/scripts/publish.py "<what changed>"`.
+
+**Season over** ("we finished second"): write `Teams/<TEAM>/<season>/season.yaml` with
+`medal: silver` (1st gold, 2nd silver, 3rd bronze, league or playoff alike; anything
+else → no medal, only `finish:`) and optionally `finish: "<their words>"`. The medal
+shows in the season menu and the season's awards appear. Then publish.
+
+**Mark a game as a final** ("mark the game on 2026-11-20 as the final"): set
+`meta.stage` in that game's file (`playoff`, `semi-final` or `final`), re-run
+`build_scorecards.py`, `validate_ballbyball.py` and `generate_stats.py`, then publish.
+
+**Show or hide things** ("hide best partnership", "show awards", "turn off streaks"):
+edit `team.yaml` → `show:`. Keys: `awards` (off by default), `medals`, `stage_tags`,
+`streaks`, `partnerships`, `hattricks`, and `records:` with `high_total`, `low_total`,
+`biggest_win`, `heaviest_loss`, `best_skin`, `most_wkts_game`, `fewest_extras_game`,
+`best_contribution`, `most_runs_game`, `best_econ`, `most_runouts_created`. A switch only
+hides; the stats are still computed. Re-run `generate_stats.py`, then publish.
+
+**Add Sam as an admin**: three steps, tell the user each plainly.
+1. On GitHub: the repo → Settings → Collaborators → Add people → Sam. This is the real permission.
+2. Sam opens claude.ai/code and connects Claude Code to the repo.
+3. You add Sam's git email to `team.yaml` → `admins:`. In cloud sessions that check
+   is best effort; step 1 is what actually lets Sam in.
+
+**Give the coach a personality** ("give the coach a personality: a grumpy old pro"):
+set `team.yaml` → `coach.persona` to their words. Applies from the next letter; old
+letters stay as written. Then publish.
 
 ## 7. Wrap up and publish
 

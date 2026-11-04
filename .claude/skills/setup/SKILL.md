@@ -79,10 +79,12 @@ remote). **New repository secret** twice:
 
 Ask in one message (offer defaults): the team name **exactly as printed on the
 scorecards**, the arena, the current league, a badge (2–4 letters), the rules
-(standard `indoor-sa`: −5 a wicket, 2 an extra, 6-ball overs; anything different?),
-and the coach's tone (banter, encouraging or serious). Then
+(standard `indoor-sa`: −5 a wicket, 2 an extra, 6-ball overs; anything different?).
+Ask the coach question first: "Do you want the AI coach's letter after each game?
+(yes / no)". `no` → add `--no-coach` to the command below and don't ask the tone;
+`yes` → ask the tone (banter, encouraging or serious). Then
 `python $ENGINE/scripts/new_team.py "<name>" --arena "<arena>" --league "<league>"
---badge <XX> --tone <tone> --gate <gate>` and, if a rule differs, set it under
+--badge <XX> --tone <tone> --gate <gate>` (`--no-coach` instead of `--tone` for no coach) and, if a rule differs, set it under
 `rules:` in the new `team.yaml`. Also put the user's email (`git config user.email`)
 in `admins:`. Ask for the season's start date if they know it and add it with
 `--season-start` (otherwise the first scorecard does).

@@ -33,6 +33,9 @@ terminal), drop the photo into `inbox/` and say **"new scorecard"**. Same steps.
 - "New season starts on 2027-01-12" · "Switch the coach to encouraging"
 - "Change the team code" (everyone re-enters the new code once)
 - "Turn on the PDF stat cards" (off by default; the app has everything)
+- "We finished second this season" · "Mark the game on 2026-11-20 as the final"
+- "Hide best partnership" · "Show awards"
+- "Add Sam as an admin" · "Give the coach a personality: a grumpy old pro"
 
 ## What's where
 

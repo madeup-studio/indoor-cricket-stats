@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- Records opens on the current season, like every other screen.
+- Games can be tagged playoff, semi-final or final (`meta.stage`).
+- A season's medal (gold, silver, bronze) shows in the season menu, set in `season.yaml`.
+- Finished seasons get awards (player, batter and bowler of the season); off by default.
+- `show:` switches in `team.yaml` hide or show awards, medals, tags, streaks and records.
+- Setup asks whether you want the AI coach.
+- A scorecard for a date and opponent already recorded is refused, not doubled.
+- "Add an admin" instructions in the skills and guides.
+- The coach can have a persona (`coach.persona`) on top of its tone.
+
 ## 1.0.0 — first release
 
 - Scorecard photo → verified game file → stats, with configurable scoring rules

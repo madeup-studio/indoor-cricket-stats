@@ -9,7 +9,7 @@ plain HTML/JS rather than the studio's TypeScript stack (a deliberate deviation,
 
 | Layer | Where | What it is |
 |---|---|---|
-| Domain | game file schema (`scripts/templates/game-template.json`), `team.yaml`, `scripts/rules.py` | One verified JSON file per game; the team's settings; the scoring rules and presets. |
+| Domain | game file schema (`scripts/templates/game-template.json`), `team.yaml`, `<season>/season.yaml`, `scripts/rules.py` | One verified JSON file per game; the team's settings; the season's medal; the scoring rules and presets. |
 | Use cases (pure) | `scripts/stats_core.py`, `scripts/report_data.py` (`build()`), `scripts/coach.py` (keys, fingerprints, status), `build_site.derive_records()` | Pure functions over match data: stats, rankings, records, which letters are due. No I/O in `report_data.build()`. |
 | Orchestration | `validate_ballbyball.py`, `build_scorecards.py`, `build_site.py`, `generate_stats.py`, `generate_pdf_report.py`, `publish.py`, `new_team.py` | Load files, call the use cases, write outputs, commit and push. |
 | Adapters | `viewer/` (the phone app), the PDF stat cards, the Claude Code skills (`.claude/skills/`), `viewer/functions/_middleware.js` (the gate) | Present the outputs; collect input through Claude. |

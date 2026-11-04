@@ -22,6 +22,7 @@ command with `TEAM=<folder>` (the team's folder name).
 
 - `enabled: false` → there is no coach: write nothing and stop.
 - `tone`: `banter` (default) | `encouraging` | `serious` — see Voice.
+- `persona`: optional one line of flavour (e.g. "a grumpy old pro"), applied on top of the tone.
 - `language`: write the whole letter in this language (default `en`; e.g. `af`).
 - `pdf: true` (top level) → the PDF stat cards are built too; the page budget applies.
 
@@ -108,6 +109,10 @@ mean for a fresh start instead.
 - **encouraging** — lead with what went well; humour gentle and never at a
   player's expense; every criticism comes as concrete homework ("next game: …").
 - **serious** — a match report: numbers, trends, homework. No jokes.
+
+If `coach.persona` is set, it colours the word choice and the running gags. Where it
+conflicts with the tone, the tone's rules still win (an encouraging coach with a
+grumpy persona is still kind).
 
 **Always** (every tone):
 

@@ -80,6 +80,14 @@ characters) and repeated wrong guesses are slowed down, but it is a shared code,
 know exactly who can look, choose the **email list** instead: only listed addresses get
 in, each with a one-time code by email.
 
+## Things you can tell Claude later
+
+- "We finished second this season" (adds the medal)
+- "Mark the game on 2026-11-20 as the final"
+- "Hide best partnership" · "Show awards"
+- "Add Sam as an admin"
+- "Give the coach a personality: a grumpy old pro"
+
 ## Keeping up to date
 
 Your repo carries its own copy of the engine in `engine/` (version in

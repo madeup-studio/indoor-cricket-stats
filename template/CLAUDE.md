@@ -17,6 +17,9 @@ than code. Most sessions happen on a phone, in a Claude Code cloud session.
 - **The team** lives in `Teams/<Team>/`; `team.yaml` has its name exactly as printed
   on the cards, badge, colours, arena, league, the scoring `rules`, the `coach`
   settings, the viewer `gate` and the `admins`.
+- **Season and display settings:** `Teams/<Team>/<season>/season.yaml` holds the
+  season's `medal` (gold / silver / bronze), `finish` text and `closed`; `team.yaml` →
+  `show` switches things in the app on or off (awards are off by default).
 - **Source of truth:** `Teams/<Team>/<season>/data/*.json`, one file per game. All
   else is generated. Never hand-edit `stats/`, `scorecards/*.md` or `site/`; fix the
   game file and re-run the scripts.
