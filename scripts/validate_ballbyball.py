@@ -31,6 +31,7 @@ import json, glob, os, sys
 import paths, rules
 
 DISM = {"R", "C", "B", "S", "L", "H", "M"}   # each worth rules.wicket_runs
+STAGES = ("league", "playoff", "semi-final", "final")
 EXTRA_TOKENS = {"w", "nb"}
 TOKENS = DISM | EXTRA_TOKENS                 # only canonical tokens allowed
 
@@ -91,6 +92,10 @@ def main():
         summaries = g["summaries"]
         sum_by = {t: {r["name"]: r for r in rows} for t, rows in summaries.items()}
         print(f"\n=== {g['date']}  {g['team']} vs {g['opponent']} ({os.path.basename(jf)}) ===")
+        stage = g.get("meta", {}).get("stage")
+        if stage and stage not in STAGES:
+            print(f"  [M] meta.stage '{stage}' not one of league/playoff/semi-final/final  FAIL")
+            total += 1; fails += 1
 
         # team totals (top-of-card authority): RS sums to team_total
         res = g["result"]

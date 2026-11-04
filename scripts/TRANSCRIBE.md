@@ -86,6 +86,7 @@ schema, then WRITE a JSON file of the same shape to the OUTPUT path you were giv
 { "date","team":"<our team>","opponent",
   "meta":{"time","season","arena":"<arena as printed>","league" (e.g. "Mens E"),
           "umpire","court","venue":null,"source_image":"scorecards/<image filename>",
+          "stage": one of league|playoff|semi-final|final, only when the card's league line or the user says so (omit otherwise),
           "rules":{<the team's rules block from team.yaml, every key written out>}},
   "result":{"outcome"(win/loss/tie for us — skins first, then runs),
             "team_total","team_skins_won","team_skins":[4],

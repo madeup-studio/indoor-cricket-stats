@@ -20,7 +20,7 @@
    "overs_per_pair": 4,
    "players_per_side": 8
   },
-  "notes": "EXAMPLE of the exact schema (a real game with names replaced). innings[0] = the team that batted first. 'team' = our team exactly as printed; result fields are from our side. meta.rules = the team.yaml rules this game was scored under (copied in when the game is added; never edited later). Optional: meta.ball_count_exceptions [{innings, skin, balls, reason}] for a skin the card itself shows with a non-standard ball count (ask the user first)."
+  "notes": "EXAMPLE of the exact schema (a real game with names replaced). innings[0] = the team that batted first. 'team' = our team exactly as printed; result fields are from our side. meta.rules = the team.yaml rules this game was scored under (copied in when the game is added; never edited later). Optional: meta.ball_count_exceptions [{innings, skin, balls, reason}] for a skin the card itself shows with a non-standard ball count (ask the user first). Optional: meta.stage, one of league|playoff|semi-final|final, only when the card's league line or the user says so (omit otherwise)."
  },
  "result": {
   "outcome": "loss",

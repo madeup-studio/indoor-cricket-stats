@@ -114,7 +114,8 @@ def build(game, out_dir):
          "league: %s" % league, "umpire: %s" % meta["umpire"],
          "court: %s" % (q(meta["court"]) if meta.get("court") else "null"),
          "venue: %s" % (q(meta["venue"]) if meta.get("venue") else "null"),
-         "source_image: %s" % meta["source_image"], "",
+         "source_image: %s" % meta["source_image"],
+         *(["stage: %s" % meta["stage"]] if meta.get("stage") else []), "",
          "# Teams & result (innings order: 1=%s batted first)" % game["innings"][0]["batting_team"],
          "team: %s" % team, "opponent: %s" % q(opp), "outcome: %s" % res["outcome"]]
     for k in ["team_total", "team_skins_won", "opponent_total", "opponent_skins_won"]:
