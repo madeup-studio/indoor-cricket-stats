@@ -84,10 +84,20 @@ def rules_for(g):
 
 def main():
     fails = total = 0
-    files = [jf for sd in paths.season_dirs()
-             for jf in sorted(glob.glob(os.path.join(paths.data_dir(sd), "*.json")))]
-    for jf in files:
-        g = json.load(open(jf, encoding="utf-8"))
+    games = []          # (path, game) across season folders, sorted within each
+    for sd in paths.season_dirs():
+        seen = {}       # (date, opponent) -> first basename in this season folder
+        for jf in sorted(glob.glob(os.path.join(paths.data_dir(sd), "*.json")),
+                         key=os.path.basename):
+            g = json.load(open(jf, encoding="utf-8"))
+            games.append((jf, g))
+            key = (str(g["date"]), g["opponent"])
+            first = seen.setdefault(key, os.path.basename(jf))
+            if first != os.path.basename(jf):
+                print(f"!! duplicate game: {first} and {os.path.basename(jf)} "
+                      f"both record {key[0]} vs {key[1]}")
+                total += 1; fails += 1
+    for jf, g in games:
         R = rules_for(g)
         summaries = g["summaries"]
         sum_by = {t: {r["name"]: r for r in rows} for t, rows in summaries.items()}
