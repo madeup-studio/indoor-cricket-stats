@@ -31,9 +31,10 @@ open a link and enter the team code.
 
 You now have your own copy. Nothing in it is shared with anyone.
 
-> **Prefer to let Claude do it?** On a computer with Claude Code, paste this into Claude
-> exactly as it is; it asks you what to call the repo. It needs the GitHub CLI, which a
-> phone session does not have, so this route is computer-only.
+> **Prefer to let Claude do it?** This needs **Claude Code** on a computer (the desktop
+> app's **Code** tab, or `claude` in a terminal), because it runs commands; normal chat
+> at claude.ai and the phone app cannot. Paste this in exactly as it is; it asks you what
+> to call the repo.
 >
 > ```text
 > I want my own private copy of the indoor-cricket stats app, made from the template
