@@ -18,10 +18,12 @@ def test_build_example_site(tmp_path):
     idx = json.load(open(tmp_path / "data" / "index.json", encoding="utf-8"))
     assert idx == [{"slug": "our-team", "name": "Our Team", "badge": "OURS", "colours": {"brand": "#4f46e5", "gold": "#f5b301"}}]
     p = json.load(open(tmp_path / "data" / "our-team.json", encoding="utf-8"))
-    assert p["seasons"][0]["label"] == "Spring 2026" and p["seasons"][0]["stats"]["team"]["played"] == 1
+    assert p["seasons"][0]["label"] == "Spring 2026" and p["seasons"][0]["stats"]["team"]["played"] == 3
+    assert p["seasons"][0]["medal"] == "silver" and p["seasons"][0]["awards"]["player"]
+    assert p["games"][2]["stage"] == "final"
     assert p["games"][0]["key"] == "2026-10-07" and p["games"][0]["letter"]["sections"]
-    assert p["alltime"]["records"]["team"]["longest_win_streak"]["value"] == 0
-    assert p["alltime"]["records"]["individual"]["best_contribution"]["name"] == "Our P2"
+    assert p["alltime"]["records"]["team"]["longest_win_streak"]["value"] == 1
+    assert p["alltime"]["records"]["individual"]["best_contribution"]["name"] == "Our P7"
     assert os.path.join(str(tmp_path), "data", "our-team.json") in files
 
 
@@ -34,7 +36,7 @@ def test_payload_shape_and_records():
         "our-team", "Our Team", "OURS", "Example Arena", "Mens E", "pin")
     assert t["coach"] == {"enabled": True, "tone": "banter"} and t["rules"]["wicket_runs"] == -5
     s = p["seasons"][0]
-    assert (s["key"], s["games"]) == ("2026-09-01", ["2026-10-07"])
+    assert (s["key"], s["games"]) == ("2026-09-01", ["2026-10-07", "2026-10-14", "2026-10-21"])
     g = p["games"][0]
     assert (g["season"], g["opp"], g["outcome"], g["total"], g["against"], g["skins"], g["oskins"]) == (
         "2026-09-01", "Opponents", "loss", 51, 80, 1, 3)
@@ -49,20 +51,24 @@ def test_payload_shape_and_records():
                        "most_wkts_game", "fewest_extras_game", "longest_win_streak", "longest_loss_streak"}
     assert set(ir) == {"best_contribution", "most_runs_game", "most_wkts_game", "best_econ",
                        "best_partnership", "hattricks", "most_runouts_created"}
-    assert tr["high_total"] == {"value": 51, "opp": "Opponents", "date": "2026-10-07", "key": "2026-10-07"}
-    assert tr["heaviest_loss"]["value"] == -29 and tr["biggest_win"] is None
-    assert tr["best_skin"]["value"] == 15
-    assert tr["most_wkts_game"]["value"] == 12 and tr["fewest_extras_game"]["value"] == 17
-    assert tr["longest_loss_streak"] == {"value": 1, "from": "2026-10-07", "to": "2026-10-07"}
-    assert tr["longest_win_streak"] == {"value": 0, "from": None, "to": None}
-    assert ir["best_contribution"]["value"] == 5
-    assert (ir["most_runs_game"]["name"], ir["most_runs_game"]["value"]) == ("Our P1", 17)
-    assert (ir["most_wkts_game"]["name"], ir["most_wkts_game"]["value"]) == ("Our P3", 4)
-    assert (ir["best_econ"]["name"], ir["best_econ"]["value"]) == ("Our P3", -3.0)
-    assert ir["best_partnership"]["names"] == ["Our P1", "Our P2"]
-    assert ir["best_partnership"]["value"] == 28
-    assert ir["hattricks"] == [] and ir["most_runouts_created"]["value"] == 1
-    assert p["generated"] == "2026-10-07"
+    # the mirrored 2026-10-21 win carries the old Opp P<n> figures over to Our P<n>
+    assert tr["high_total"] == {"value": 80, "opp": "Opponents", "date": "2026-10-21", "key": "2026-10-21"}
+    assert tr["heaviest_loss"]["value"] == -29 and tr["biggest_win"]["value"] == 29
+    assert tr["biggest_win"]["key"] == "2026-10-21"
+    assert tr["best_skin"]["value"] == 6
+    assert tr["most_wkts_game"]["value"] == 17 and tr["fewest_extras_game"]["value"] == 12
+    assert tr["longest_loss_streak"] == {"value": 2, "from": "2026-10-07", "to": "2026-10-14"}
+    assert tr["longest_win_streak"] == {"value": 1, "from": "2026-10-21", "to": "2026-10-21"}
+    assert ir["best_contribution"]["value"] == 27
+    assert (ir["most_runs_game"]["name"], ir["most_runs_game"]["value"]) == ("Our P7", 22)
+    assert (ir["most_wkts_game"]["name"], ir["most_wkts_game"]["value"]) == ("Our P3", 5)
+    assert (ir["best_econ"]["name"], ir["best_econ"]["value"]) == ("Our P3", -7.5)
+    assert ir["best_partnership"]["names"] == ["Our P7", "Our P8"]
+    assert ir["best_partnership"]["value"] == 29
+    assert [(h["name"], h["key"]) for h in ir["hattricks"]] == [("Our P1", "2026-10-21")]
+    assert ir["most_runouts_created"]["value"] == 3
+    assert p["generated"] == "2027-01-14"
+    assert p["seasons"][1]["games"] == ["2027-01-14"]
 
 
 def test_games_payload_double_header(tmp_team_two_games_same_day):
@@ -118,8 +124,10 @@ def test_viewer_tests_not_copied(tmp_path):
 def test_payload_show_defaults_and_override(tmp_team):
     import build_site as B, team_settings as TS, yaml
     team_dir = tmp_team / "example-team"
-    assert B.team_payload(str(team_dir), None)["team"]["show"] == TS.SHOW_DEFAULTS
     cfg = yaml.safe_load((team_dir / "team.yaml").read_text(encoding="utf-8"))
+    cfg.pop("show")           # the example sets awards: true; with no block, the defaults apply
+    (team_dir / "team.yaml").write_text(yaml.safe_dump(cfg), encoding="utf-8")
+    assert B.team_payload(str(team_dir), None)["team"]["show"] == TS.SHOW_DEFAULTS
     cfg["show"] = {"awards": True, "records": {"low_total": False}}
     (team_dir / "team.yaml").write_text(yaml.safe_dump(cfg), encoding="utf-8")
     show = B.team_payload(str(team_dir), None)["team"]["show"]

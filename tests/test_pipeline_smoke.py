@@ -8,6 +8,6 @@ def test_example_team_stats():
     seasons, allm, R = RD.load_all()
     d = RD.build(allm, R)
     t = d["team"]
-    assert (t["played"], t["won"], t["lost"]) == (1, 0, 1)
-    assert (t["runs_for"], t["runs_against"]) == (51, 80)
-    assert (t["skins_for"], t["skins_against"]) == (1, 3)
+    assert (t["played"], t["won"], t["lost"]) == (4, 1, 3)
+    assert (t["runs_for"], t["runs_against"]) == (233, 291)
+    assert (t["skins_for"], t["skins_against"]) == (6, 10)

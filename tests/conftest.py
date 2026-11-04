@@ -28,10 +28,13 @@ def run_script():
 
 
 def _copy_example(tmp_path):
+    """Copy the example team, cut back to its original single game (2026-10-07): the
+    public example has since grown, and the fixtures below build their own extras."""
     import shutil
     teams = tmp_path / "Teams"
     shutil.copytree(os.path.join(REPO, "Teams", "example-team"), teams / "example-team",
-                    ignore=shutil.ignore_patterns(".build", "*.pdf"))
+                    ignore=shutil.ignore_patterns(".build", "*.pdf", "2026-10-14*",
+                                                  "2026-10-21*", "2027-01-1*", "season.yaml"))
     return teams
 
 

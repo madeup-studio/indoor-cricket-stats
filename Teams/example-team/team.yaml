@@ -6,3 +6,29 @@ league: "Mens E"                      # current league at the arena (information
 colours:                              # report brand colours (hex)
   brand: "#4f46e5"
   gold: "#f5b301"
+
+coach:
+  enabled: true               # false = no Coach tab, no letter
+  tone: banter                # banter | encouraging | serious
+  language: en                # the letter's language (e.g. af)
+  persona: ""                 # optional: one line of flavour for the coach, e.g. "a grumpy old pro"
+
+show:                         # what the app shows; false hides it (stats still computed)
+  awards: true                # player / batter / bowler of the season (finished seasons)
+  medals: true                # the season's medal icon in the season menu
+  stage_tags: true            # "Playoff" / "Final" tags on games
+  streaks: true               # longest winning / losing runs
+  partnerships: true          # best partnership record
+  hattricks: true             # the hat-trick records (there is no player-page count)
+  records:                    # individual record cards; a key set to false hides that card
+    high_total: true
+    low_total: true
+    biggest_win: true
+    heaviest_loss: true
+    best_skin: true
+    most_wkts_game: true
+    fewest_extras_game: true
+    best_contribution: true
+    most_runs_game: true
+    best_econ: true
+    most_runouts_created: true
