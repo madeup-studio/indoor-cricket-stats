@@ -7,7 +7,8 @@ Claude does the technical parts; you click a few buttons and paste a few things.
 ## What you need
 
 Only the admin (the person who adds the scorecards) needs any of this. Teammates just
-open a link and enter the team code.
+open a link and enter the team code. Create the accounts first; setup goes quickest
+when they already exist.
 
 - A **GitHub** account (free): https://github.com/signup
 - A **Cloudflare** account (free): https://dash.cloudflare.com/sign-up
