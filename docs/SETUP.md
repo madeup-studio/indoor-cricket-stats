@@ -31,6 +31,26 @@ open a link and enter the team code.
 
 You now have your own copy. Nothing in it is shared with anyone.
 
+> **Prefer to let Claude do it?** On a computer with Claude Code, paste this into Claude
+> and replace `YOUR-TEAM-STATS` with the name you want. It needs the GitHub CLI, which
+> a phone session does not have, so this route is computer-only.
+>
+> ```text
+> I want my own private copy of the indoor-cricket stats app, made from the template
+> https://github.com/madeup-studio/indoor-cricket-stats-team
+>
+> 1. Check the GitHub CLI is installed and signed in (`gh auth status`). If not, help me
+>    install it and run `gh auth login`, telling me exactly what to click.
+> 2. Create a private repository called YOUR-TEAM-STATS under my account from that
+>    template, and clone it:
+>    gh repo create YOUR-TEAM-STATS --private --template madeup-studio/indoor-cricket-stats-team --clone
+> 3. Tell me the folder it was cloned into. I will open Claude Code in that folder and
+>    type /setup. Do not run the setup wizard from here.
+>
+> Setup guide, for reference:
+> https://github.com/madeup-studio/indoor-cricket-stats/blob/main/docs/SETUP.md
+> ```
+
 ## 2. Connect Claude to it
 
 1. Open https://claude.ai/code (or the Claude app → **Code**).
