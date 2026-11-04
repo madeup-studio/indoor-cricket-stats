@@ -1,10 +1,9 @@
 // Which scope (a season key or "alltime") a screen shows — pure, no DOM.
-// Records default to all-time; every other screen to the latest season. A scope the
-// viewer picked in the switcher (kept in sessionStorage for the visit) wins on every
-// screen while it exists for the team being shown.
+// Every screen defaults to the latest season. A scope the viewer picked in the switcher
+// (kept in sessionStorage for the visit) wins on every screen while it exists for the
+// team being shown.
 
 export function defaultScope(routeName, data) {
-  if (routeName === "records") return "alltime";
   const seasons = (data && data.seasons) || [];
   return seasons.length ? seasons[seasons.length - 1].key : "alltime";
 }
