@@ -27,6 +27,7 @@ team's data ever reaches anyone else.
 | Cloudflare | hosts the app and the team-code gate (Pages) | free |
 | Claude Pro or Max (the admin) | reads the scorecards and writes the coach's letter, in the Claude app | your subscription |
 
+Only the admin needs these accounts; teammates open a link and enter the team code.
 Details in [docs/COSTS.md](docs/COSTS.md). Setup takes about 20 minutes:
 [docs/SETUP.md](docs/SETUP.md).
 

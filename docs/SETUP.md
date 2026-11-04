@@ -6,23 +6,35 @@ Claude does the technical parts; you click a few buttons and paste a few things.
 
 ## What you need
 
+Only the admin (the person who adds the scorecards) needs any of this. Teammates just
+open a link and enter the team code.
+
 - A **GitHub** account (free): https://github.com/signup
 - A **Cloudflare** account (free): https://dash.cloudflare.com/sign-up
-- A **Claude Pro or Max** plan for whoever adds the scorecards: https://claude.ai/upgrade
-  (costs: [COSTS.md](COSTS.md))
-- The **Claude app** on that person's phone (iPhone or Android), signed in.
+- A **Claude Pro or Max** plan: https://claude.ai/upgrade (costs: [COSTS.md](COSTS.md))
+- The **Claude app** on your phone (iPhone or Android), signed in.
+
+> **Never used GitHub?** It's a website that stores folders of files ("repositories")
+> and keeps every change. Your team's repository will hold the scorecards, the stats
+> and the app. Sign up at https://github.com/signup with any email, confirm the email
+> it sends you, and you're set; you won't need to learn anything else about it. Pick
+> **Free** if it asks about plans.
 
 ## 1. Make your team's copy
 
-1. Open https://github.com/madeup-studio/indoor-cricket-stats-team
-2. **Use this template** → **Create a new repository**.
+1. Open https://github.com/madeup-studio/indoor-cricket-stats-team (sign in if asked).
+2. Tap the green **Use this template** button at the top → **Create a new repository**.
 3. Name it (e.g. `our-team-stats`), choose **Private**, then **Create repository**.
+
+You now have your own copy. Nothing in it is shared with anyone.
 
 ## 2. Connect Claude to it
 
 1. Open https://claude.ai/code (or the Claude app → **Code**).
-2. The first time, it asks to connect GitHub: allow it, and when GitHub asks which
-   repositories the Claude app may use, pick your new repo.
+2. The first time, it asks to connect GitHub. Allow it. GitHub then shows a page
+   asking where to install the Claude app: choose **Only select repositories**, pick
+   your new repo, and confirm (**Install & Authorize**).
+3. Back in Claude, your repo appears in the list. Choose it to start a session.
 
 ## 3. Let Claude reach Cloudflare (once)
 
