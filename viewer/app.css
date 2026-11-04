@@ -176,6 +176,12 @@ a.card::after {                         /* a quiet chevron: this card opens some
   color: var(--madeup-color-surface-elevated);   /* white in light, deep slate in dark */
   background: var(--madeup-color-ink-muted);
 }
+.tag {
+  display: inline-block; padding: 0 var(--madeup-space-2); border-radius: 999px;
+  font-size: 13px; font-weight: 600; line-height: 1.6; white-space: nowrap;
+  color: var(--madeup-color-ink-muted); border: 1px solid var(--madeup-color-border);
+  margin-left: var(--madeup-space-2);
+}
 .pill.win { background: var(--madeup-color-success); }
 .pill.loss { background: var(--madeup-color-danger); }
 
@@ -278,11 +284,13 @@ a.game-row:active { background: var(--madeup-color-surface); }
 .game-row .when { font-size: 15px; color: var(--madeup-color-ink-muted); }
 .game-row .what { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .game-row .opp { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.game-row .what .tag { align-self: flex-start; margin-left: 0; }
 .game-row .sk { font-size: 14px; color: var(--madeup-color-ink-muted); }
 .game-row .skins.mini { max-width: 120px; }
 .game-row .res { display: flex; align-items: center; gap: var(--madeup-space-2); font-size: 20px; }
 
 .game-head { margin: var(--madeup-space-1) 0 var(--madeup-space-4); }
+.game-head .tag { margin-left: 0; }
 .game-head h1 { font-size: 28px; }
 .game-head .score-line { flex-wrap: wrap; margin-bottom: 0; }
 .skins-block { display: flex; align-items: flex-start; gap: var(--madeup-space-2); margin-bottom: var(--madeup-space-4); }
@@ -335,6 +343,8 @@ a.game-row:active { background: var(--madeup-color-surface); }
 .avatar.lg { width: 72px; height: 72px; font-size: 26px; }
 
 .player-head { display: flex; align-items: center; gap: var(--madeup-space-4); margin: var(--madeup-space-1) 0 var(--madeup-space-4); }
+.player-head .player-title { min-width: 0; }
+.player-head .tally { margin: 0; }
 .player-head h1 { font-size: 28px; min-width: 0; overflow-wrap: anywhere; }
 .coach-note {
   margin: 0 0 var(--madeup-space-5); padding: var(--madeup-space-3) var(--madeup-space-4);
@@ -383,6 +393,7 @@ a.game-row:active { background: var(--madeup-color-surface); }
 /* ---------------------------------------------------------------- records */
 .scope-note { margin-top: calc(-1 * var(--madeup-space-3)); }
 h2.group { font-size: 20px; margin: var(--madeup-space-5) 0 var(--madeup-space-3); }
+h3.label { margin: var(--madeup-space-4) 0 var(--madeup-space-2); }
 .rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); column-gap: var(--madeup-space-3); }
 .rec-wrap { position: relative; }
 .rec-wrap > .help { position: absolute; top: var(--madeup-space-3); right: var(--madeup-space-6); }

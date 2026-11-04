@@ -4,6 +4,7 @@
 import { matchRoute, routeHash } from "./router.js";
 import { defaultScope, resolveScope as pickScope } from "./scope.js";
 import { closePopover } from "./help.js";
+import { seasonOptionLabel, isShown } from "./model.js";
 
 export const screens = {};
 export const state = { teams: [], team: null, data: null, scope: null, route: null, chosen: false };
@@ -161,7 +162,8 @@ const $ = (sel) => document.querySelector(sel);
 
 function fillScope(data, scope) {
   const sel = $("#scope");
-  const opts = [...(data.seasons || [])].reverse().map((s) => [s.key, s.label]);
+  const opts = [...(data.seasons || [])].reverse()
+    .map((s) => [s.key, isShown(data.team && data.team.show, "medals") ? seasonOptionLabel(s) : s.label]);
   opts.push(["alltime", "All-time"]);
   sel.replaceChildren(...opts.map(([v, t]) => h("option", { value: v, selected: v === scope }, t)));
   sel.hidden = !(data.seasons || []).length;

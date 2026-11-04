@@ -3,6 +3,7 @@ import { screens, h, fmt, signed, fmtDate, link, playerBySlug, seasonOf } from "
 import { sparkline } from "../sparkline.js";
 import { helpIcon } from "../help.js";
 import { safeHtml } from "../sanitize.js";
+import { isShown, awardTally } from "../model.js";
 
 export function initials(name) {
   const w = String(name).trim().split(/\s+/).filter(Boolean);
@@ -132,10 +133,13 @@ screens.player = (ctx) => {
   const seasonKey = scope !== "alltime" ? scope : (seasons.length ? seasons[seasons.length - 1].key : null);
   const season = seasonKey ? seasonOf(data, seasonKey) : null;
   const note = latestNote(data, name);
+  const tally = isShown(data.team && data.team.show, "awards") ? awardTally(p) : null;
   const scopeLog = (ctx.stats?.gamelog || {})[name];
 
   return h("div", null,
-    h("header", { class: "player-head" }, avatar(data, name, "lg"), h("h1", null, name)),
+    h("header", { class: "player-head" }, avatar(data, name, "lg"),
+      h("div", { class: "player-title" }, h("h1", null, name),
+        tally ? h("p", { class: "muted small tally" }, tally) : null)),
     note ? h("aside", { class: "coach-note" },
       h("span", { class: "label" }, "From the coach"),
       h("p", { html: safeHtml(note.note) }),

@@ -3,6 +3,10 @@ import { screens, h, fmt, signed, fmtDate, score, pill, outcomeWord, skinsStrip,
   gameByKey } from "../app.js";
 import { renderLetter, latestLetterGame } from "./coach.js";
 import { helpIcon } from "../help.js";
+import { isShown, stageLabel } from "../model.js";
+
+const stageTag = (data, g) =>
+  isShown(data.team && data.team.show, "stage_tags") && stageLabel(g) ? h("span", { class: "tag" }, stageLabel(g)) : null;
 
 screens.games = (ctx) => {
   const title = h("div", { class: "screen-title" }, h("h1", null, "Games"));
@@ -14,7 +18,7 @@ screens.games = (ctx) => {
     h("a", { class: "game-row", href: link("game", g.key) },
       h("span", { class: "when num" }, fmtDate(g.date)),
       h("span", { class: "what" },
-        h("span", { class: "opp" }, g.opp),
+        h("span", { class: "opp" }, g.opp), stageTag(ctx.data, g),
         h("span", { class: "sk num" }, `skins ${g.skins}–${g.oskins}`),
         skinsStrip(g.skin_scores, true)),
       h("span", { class: "res" }, h("b", { class: "num" }, score(g.total, g.against)), pill(g.outcome))));
@@ -53,7 +57,7 @@ screens.game = (ctx) => {
       h("p", null, "It may have been renamed."), h("a", { href: link("games") }, "All games"));
   }
   const header = h("header", { class: "game-head" },
-    h("span", { class: "label" }, fmtDate(g.date, true)),
+    h("span", { class: "label" }, fmtDate(g.date, true)), stageTag(data, g),
     h("h1", null, `vs ${g.opp}`),
     h("div", { class: "score-line" }, h("span", { class: "big" }, score(g.total, g.against)), pill(g.outcome),
       h("span", { class: "muted small" }, `${outcomeWord(g.outcome)}, skins ${g.skins}–${g.oskins}`)));
