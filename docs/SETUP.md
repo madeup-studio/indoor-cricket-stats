@@ -32,19 +32,21 @@ open a link and enter the team code.
 You now have your own copy. Nothing in it is shared with anyone.
 
 > **Prefer to let Claude do it?** On a computer with Claude Code, paste this into Claude
-> and replace `YOUR-TEAM-STATS` with the name you want. It needs the GitHub CLI, which
-> a phone session does not have, so this route is computer-only.
+> exactly as it is; it asks you what to call the repo. It needs the GitHub CLI, which a
+> phone session does not have, so this route is computer-only.
 >
 > ```text
 > I want my own private copy of the indoor-cricket stats app, made from the template
 > https://github.com/madeup-studio/indoor-cricket-stats-team
 >
-> 1. Check the GitHub CLI is installed and signed in (`gh auth status`). If not, help me
+> 1. First ask me what to call the repository (lowercase letters, numbers and dashes,
+>    for example our-team-stats) and wait for my answer. Call it NAME below.
+> 2. Check the GitHub CLI is installed and signed in (`gh auth status`). If not, help me
 >    install it and run `gh auth login`, telling me exactly what to click.
-> 2. Create a private repository called YOUR-TEAM-STATS under my account from that
->    template, and clone it:
->    gh repo create YOUR-TEAM-STATS --private --template madeup-studio/indoor-cricket-stats-team --clone
-> 3. Do not run the setup wizard from here. Instead, finish with short next steps for
+> 3. Create a private repository called NAME under my account from that template, and
+>    clone it:
+>    gh repo create NAME --private --template madeup-studio/indoor-cricket-stats-team --clone
+> 4. Do not run the setup wizard from here. Instead, finish with short next steps for
 >    me: the folder it was cloned into; open that folder in Claude Code (desktop app →
 >    Code → open the folder, or `cd` into it and run `claude`); type /setup and follow
 >    the wizard, about 20 minutes; or connect the Claude phone app to the new repo and
