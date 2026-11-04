@@ -10,7 +10,9 @@ def test_new_team_writes_spec_settings(tmp_path, run_script):
     import rules
     assert rules.load_rules(cfg) == rules.PRESETS["indoor-sa"]
     assert cfg["rules"]["preset"] == "indoor-sa"
-    assert cfg["coach"] == {"enabled": True, "tone": "banter", "language": "en"}
+    assert cfg["coach"] == {"enabled": True, "tone": "banter", "language": "en", "persona": ""}
+    import team_settings as TS
+    assert cfg["show"] == TS.SHOW_DEFAULTS
     assert (cfg["gate"], cfg["admins"], cfg["pdf"], cfg["publish_unconfirmed"],
             cfg["game_type"], cfg["league"]) == ("pin", [], False, True, "indoor", "Mens F")
     assert (teams / "zed" / "2026-09-01" / "data").is_dir()
@@ -30,3 +32,13 @@ def test_new_team_coach_notes_per_game(tmp_path, run_script):
     run_script("new_team.py", "Zed Team", "--folder", "zed", env={"TEAMS_DIR": str(teams)})
     text = (teams / "zed" / "coach_notes.yaml").read_text(encoding="utf-8")
     assert yaml.safe_load(text) == {"letters": []} and "_letter" not in text
+
+
+def test_new_team_no_coach(tmp_path, run_script):
+    teams = tmp_path / "Teams"
+    r = run_script("new_team.py", "Zed Team", "--folder", "zed", "--no-coach", env={"TEAMS_DIR": str(teams)})
+    assert r.returncode == 0, r.stderr
+    cfg = yaml.safe_load((teams / "zed" / "team.yaml").read_text(encoding="utf-8"))
+    assert cfg["coach"]["enabled"] is False
+    text = (teams / "zed" / "team.yaml").read_text(encoding="utf-8")
+    assert "show:" in text and "# player / batter / bowler of the season" in text

@@ -2,7 +2,7 @@
 """Set up a team folder (first run) or add a new season folder to it.
 
   python scripts/new_team.py "Team Name" --arena "Example Arena" [--badge ABC]
-         [--league "Mens E"] [--preset indoor-sa] [--tone banter] [--gate pin]
+         [--league "Mens E"] [--preset indoor-sa] [--tone banter] [--gate pin] [--no-coach]
       creates Teams/<folder>/ with team.yaml, players.yaml, seasons.md,
       coach_notes.yaml and photos/  (folder defaults to the name, spaces -> '-')
 
@@ -16,6 +16,7 @@ printed on the scorecards.
 import argparse, datetime, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rules
+import team_settings
 _had_optional = "ACS_TEAM_OPTIONAL" in os.environ
 os.environ.setdefault("ACS_TEAM_OPTIONAL", "1")    # no team yet is fine here
 import paths
@@ -62,7 +63,7 @@ RULE_NOTES = dict(
 
 
 def team_yaml(name, arena, badge, league="", preset=rules.DEFAULT_PRESET, tone="banter",
-              gate="pin"):
+              gate="pin", coach_enabled=True):
     """team.yaml text for a new team: the spec's layout with every rule written out."""
     def line(key, val, note):
         return f"{key}: {val}".rstrip().ljust(30) + f"# {note}\n"
@@ -88,21 +89,32 @@ def team_yaml(name, arena, badge, league="", preset=rules.DEFAULT_PRESET, tone="
     out += [line(f"  {k}", yv(v), RULE_NOTES[k]) for k, v in rules.PRESETS[preset].items()]
     out += ["\n",
             "coach:\n",
-            line("  enabled", "true", "false = no Coach tab, no letter"),
+            line("  enabled", yv(coach_enabled), "false = no Coach tab, no letter"),
             line("  tone", tone, "banter | encouraging | serious"),
             line("  language", "en", "the letter's language (e.g. af)"),
+            line("  persona", '""',
+                 'optional: one line of flavour for the coach, e.g. "a grumpy old pro"'),
             "\n",
             line("gate", gate, "how viewers get in: pin | email | none"),
-            line("admins", "[]", "email addresses of this team's admins")]
+            line("admins", "[]", "email addresses of this team's admins"),
+            "\n",
+            line("show", "", team_settings.SHOW_NOTES.get(
+                "show", "what the app shows; false hides it (stats still computed)"))]
+    for k, v in team_settings.SHOW_DEFAULTS.items():
+        if isinstance(v, dict):
+            out.append(line(f"  {k}", "", team_settings.SHOW_NOTES[k]))
+            out += [f"    {rk}: {yv(rv)}\n" for rk, rv in v.items()]
+        else:
+            out.append(line(f"  {k}", yv(v), team_settings.SHOW_NOTES[k]))
     return "".join(out)
 
 
 def create_team(name, folder, arena, badge, league="", preset=rules.DEFAULT_PRESET,
-                tone="banter", gate="pin"):
+                tone="banter", gate="pin", coach_enabled=True):
     team_dir = os.path.join(TEAMS_DIR, folder)
     print(f"Team '{name}' -> {_rel(team_dir)}")
     write(os.path.join(team_dir, "team.yaml"),
-          team_yaml(name, arena, badge, league, preset, tone, gate))
+          team_yaml(name, arena, badge, league, preset, tone, gate, coach_enabled))
     write(os.path.join(team_dir, "players.yaml"),
           "# Team player list & name registry (one per team).\n"
           "#   as    : exactly how the name is printed on a scorecard (do not change).\n"
@@ -159,6 +171,7 @@ def main():
                     help="scoring rules preset (default: %(default)s)")
     ap.add_argument("--tone", default="banter", choices=TONES, help="AI coach tone")
     ap.add_argument("--gate", default="pin", choices=GATES, help="how viewers get in")
+    ap.add_argument("--no-coach", action="store_true", help="turn the AI coach off")
     ap.add_argument("--folder", help="folder name under Teams/ (default: the name)")
     ap.add_argument("--season-start", help="YYYY-MM-DD: also create this season's folder")
     a = ap.parse_args()
@@ -166,7 +179,7 @@ def main():
     if a.name:
         folder = a.folder or re.sub(r"[^A-Za-z0-9]+", "-", a.name).strip("-")
         team_dir = create_team(a.name, folder, a.arena, a.badge or default_badge(a.name),
-                               a.league, a.preset, a.tone, a.gate)
+                               a.league, a.preset, a.tone, a.gate, not a.no_coach)
     elif a.season_start:
         team_dir = paths.TEAM_DIR      # the TEAM env var or the only team
         if not team_dir:
