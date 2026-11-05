@@ -15,4 +15,5 @@ def test_skills_and_docs_carry_the_new_phrases():
         assert s in readme, s
     assert "season.yaml" in _read("template", "CLAUDE.md") and "season.yaml" in _read("docs", "architecture.md")
     assert "Things you can tell Claude" in _read("docs", "SETUP.md")
-    assert "Unreleased" in _read("CHANGELOG.md")
+    changelog = _read("CHANGELOG.md")
+    assert "## 1.0.0" in changelog and "meta.stage" in changelog
